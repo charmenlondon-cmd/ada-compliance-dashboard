@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADA Compliance Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .score-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+        .score-number { font-size: 48px; font-weight: bold; }
+        .violations-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0; }
+        .violation-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        .critical { border-left: 4px solid #dc3545; }
+        .serious { border-left: 4px solid #fd7e14; }
+        .moderate { border-left: 4px solid #ffc107; }
+        .minor { border-left: 4px solid #28a745; }
+        .chart-container { width: 100%; height: 400px; margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ADA Compliance Dashboard</h1>
+        
+        <div class="score-card">
+            <div class="score-number" id="compliance-score">Loading...</div>
+            <div>Compliance Score</div>
+            <div id="last-scan">Last scan: Loading...</div>
+        </div>
+        
+        <div id="violations-container">
+            <h2>Recent Violations</h2>
+            <div class="violations-grid" id="violations-grid">
+                Loading violations...
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="trend-chart"></canvas>
+        </div>
+        
+        <button onclick="requestRescan()" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Request New Scan
+        </button>
+    </div>
+    
+    <script>
+        // This would connect to your Google Sheets via Google Apps Script API
+        // or through a simple backend that reads from Sheets
+        
+        async function loadDashboard() {
+            // For MVP, you could even use Google Apps Script to serve JSON
+            // or integrate with n8n webhook that reads from Sheets
+            
+            const customerId = getCustomerIdFromURL(); // Parse from URL param
+            
+            // Fetch data from your Google Sheets (via Google Apps Script API)
+            const response = await fetch(`/api/customer-data?id=${customerId}`);
+            const data = await response.json();
+            
+            updateDashboard(data);
+        }
+        
+        function updateDashboard(data) {
+            document.getElementById('compliance-score').textContent = data.score;
+            document.getElementById('last-scan').textContent = `Last scan: ${new Date(data.lastScan).toLocaleDateString()}`;
+            
+            // Update violations
+            const violationsGrid = document.getElementById('violations-grid');
+            violationsGrid.innerHTML = data.violations.map(v => `
+                <div class="violation-card ${v.impact}">
+                    <h4>${v.rule_id}</h4>
+                    <p>${v.description}</p>
+                    <small>Impact: ${v.impact}</small>
+                    <a href="${v.help_url}" target="_blank">Learn how to fix</a>
+                </div>
+            `).join('');
+            
+            // Update trend chart
+            updateTrendChart(data.historical);
+        }
+        
+        function updateTrendChart(historical) {
+            const ctx = document.getElementById('trend-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: historical.map(h => new Date(h.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: historical.map(h => h.score),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+        
+        function getCustomerIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('customer_id') || 'CUST001';
+        }
+        
+        async function requestRescan() {
+            // Trigger n8n webhook for immediate rescan
+            await fetch('/webhook/trigger-scan', {
+                method: 'POST',
+                body: JSON.stringify({ customer_id: getCustomerIdFromURL() })
+            });
+            alert('Scan requested! Results will be available in 2-3 minutes.');
+        }
+        
+        // Load dashboard on page load
+        loadDashboard();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadDashboard, 300000);
+    </script>
+</body>
+</html>
