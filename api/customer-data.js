@@ -25,10 +25,21 @@ module.exports = async function handler(req, res) {
     }
 
     // Initialize Google Sheets API
+    // Handle private key - works whether Vercel stores it with literal \n or actual line breaks
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
+    // If the key contains literal \n strings, convert them to actual newlines
+    if (privateKey.includes('\\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+    // Also handle escaped backslashes
+    if (privateKey.includes('\\\\n')) {
+      privateKey = privateKey.replace(/\\\\n/g, '\n');
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        private_key: privateKey,
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
