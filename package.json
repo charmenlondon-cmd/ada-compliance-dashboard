@@ -1,0 +1,21 @@
+{
+  "name": "ada-compliance-dashboard",
+  "version": "1.0.0",
+  "description": "ADA Compliance Scanner Dashboard - Customer-facing compliance monitoring interface",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "dependencies": {
+    "googleapis": "^126.0.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Bison Blu AI Labs",
+  "license": "MIT"
+}
