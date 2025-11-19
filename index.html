@@ -375,6 +375,14 @@
                     data.customer.company_name || 'Your Company';
             }
 
+            // Check if scan is still in progress
+            if (data.customer && data.customer.status === 'scanning') {
+                showScanInProgress(data.customer.company_name);
+                // Auto-refresh every 10 seconds while scanning
+                setTimeout(loadDashboard, 10000);
+                return;
+            }
+
             // Update compliance score
             const score = data.score || 0;
             const scoreElement = document.getElementById('compliance-score');
@@ -537,6 +545,28 @@
             document.getElementById('violations-grid').innerHTML = '';
             document.getElementById('violation-counts').innerHTML = '';
             document.getElementById('scan-btn').disabled = true;
+        }
+
+        function showScanInProgress(companyName) {
+            document.getElementById('company-name').textContent = companyName || 'Your Company';
+            document.getElementById('compliance-score').innerHTML = '<span style="font-size: 2rem;">⏳</span>';
+            document.getElementById('last-scan').textContent = 'Scan in progress...';
+            document.getElementById('customer-info').innerHTML = `
+                <div style="text-align: center; color: #667eea;">
+                    <strong>Your accessibility scan is running</strong><br><br>
+                    This usually takes 30-60 seconds.<br>
+                    The page will automatically update when complete.
+                </div>
+            `;
+            document.getElementById('violations-grid').innerHTML = `
+                <div class="loading" style="grid-column: 1 / -1;">
+                    <div style="font-size: 1.5rem; margin-bottom: 10px;">🔍</div>
+                    Scanning your website for accessibility issues...
+                </div>
+            `;
+            document.getElementById('violation-counts').innerHTML = '';
+            document.getElementById('scan-btn').disabled = true;
+            document.getElementById('scan-btn').textContent = 'Scan in Progress...';
         }
 
         // Store customer ID globally after loading
