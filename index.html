@@ -250,6 +250,158 @@
             font-size: 1.2rem;
         }
 
+        /* AI Insights Styles */
+        .ai-insights-section {
+            grid-column: 1 / -1;
+        }
+
+        .ai-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .ai-summary h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .priority-fixes {
+            margin-top: 16px;
+        }
+
+        .priority-fix {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .priority-fix .rank {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .priority-fix h4 {
+            display: inline;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .priority-fix .impact-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+
+        .priority-fix .impact-badge.critical { background: #dc3545; color: white; }
+        .priority-fix .impact-badge.serious { background: #fd7e14; color: white; }
+        .priority-fix .impact-badge.moderate { background: #ffc107; color: #333; }
+        .priority-fix .impact-badge.minor { background: #17a2b8; color: white; }
+
+        .priority-fix .explanation {
+            margin: 10px 0;
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .priority-fix .fix-suggestion {
+            background: #e8f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .priority-fix .fix-suggestion strong {
+            color: #667eea;
+        }
+
+        .priority-fix .time-estimate {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .ai-issues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .ai-issue-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .ai-issue-card h4 {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .ai-issue-card .issue-type {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-bottom: 8px;
+        }
+
+        .ai-issue-card p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .ai-issue-card .wcag-ref {
+            font-size: 0.75rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        .reading-level-card {
+            background: #fff8f0;
+            border-left-color: #fd7e14;
+        }
+
+        .total-fix-time {
+            text-align: center;
+            padding: 16px;
+            background: #e8f4f8;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .total-fix-time strong {
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8rem;
@@ -308,6 +460,14 @@
                 <h2>Compliance Trend</h2>
                 <div class="chart-wrapper">
                     <canvas id="trend-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="card ai-insights-section" id="ai-insights-section" style="display: none;">
+                <h2>AI Accessibility Insights</h2>
+                <div id="ai-insights-content">
+                    <div class="loading">Loading AI insights...</div>
                 </div>
             </div>
 
@@ -450,6 +610,115 @@
 
             // Update trend chart
             updateTrendChart(data.historical || []);
+
+            // Update AI insights
+            updateAIInsights(data.ai_analysis);
+        }
+
+        function updateAIInsights(aiAnalysis) {
+            const aiSection = document.getElementById('ai-insights-section');
+            const aiContent = document.getElementById('ai-insights-content');
+
+            if (!aiAnalysis) {
+                aiSection.style.display = 'none';
+                return;
+            }
+
+            aiSection.style.display = 'block';
+
+            let html = '';
+
+            // Summary
+            if (aiAnalysis.summary) {
+                html += `
+                    <div class="ai-summary">
+                        <h3>Summary</h3>
+                        <p>${aiAnalysis.summary}</p>
+                    </div>
+                `;
+            }
+
+            // Priority Fixes
+            if (aiAnalysis.priority_fixes && aiAnalysis.priority_fixes.length > 0) {
+                html += '<div class="priority-fixes"><h3 style="margin-bottom: 12px; color: #333;">Priority Fixes</h3>';
+                aiAnalysis.priority_fixes.forEach((fix, index) => {
+                    const rank = fix.rank || index + 1;
+                    const impact = fix.impact || 'moderate';
+                    html += `
+                        <div class="priority-fix">
+                            <div>
+                                <span class="rank">${rank}</span>
+                                <h4>${fix.issue}</h4>
+                                <span class="impact-badge ${impact}">${impact}</span>
+                            </div>
+                            <p class="explanation">${fix.explanation}</p>
+                            <div class="fix-suggestion">
+                                <strong>How to fix:</strong> ${fix.fix}
+                            </div>
+                            ${fix.estimated_time ? `<div class="time-estimate">Estimated time: ${fix.estimated_time}</div>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Visual Issues (Advanced AI)
+            if (aiAnalysis.visual_issues && aiAnalysis.visual_issues.length > 0) {
+                html += '<h3 style="margin: 20px 0 12px; color: #333;">Visual Issues</h3><div class="ai-issues-grid">';
+                aiAnalysis.visual_issues.forEach(issue => {
+                    html += `
+                        <div class="ai-issue-card">
+                            <span class="issue-type">${issue.type || 'visual'}</span>
+                            <h4>${issue.description}</h4>
+                            ${issue.location ? `<p><strong>Location:</strong> ${issue.location}</p>` : ''}
+                            <p>${issue.recommendation}</p>
+                            ${issue.wcag_criterion ? `<span class="wcag-ref">WCAG: ${issue.wcag_criterion}</span>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Content Issues (Advanced AI)
+            if (aiAnalysis.content_issues && aiAnalysis.content_issues.length > 0) {
+                html += '<h3 style="margin: 20px 0 12px; color: #333;">Content Issues</h3><div class="ai-issues-grid">';
+                aiAnalysis.content_issues.forEach(issue => {
+                    html += `
+                        <div class="ai-issue-card">
+                            <span class="issue-type">${issue.type || 'content'}</span>
+                            <h4>${issue.description}</h4>
+                            ${issue.examples ? `<p><strong>Examples:</strong> ${issue.examples.join(', ')}</p>` : ''}
+                            <p>${issue.recommendation}</p>
+                            ${issue.wcag_criterion ? `<span class="wcag-ref">WCAG: ${issue.wcag_criterion}</span>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Reading Level (Advanced AI)
+            if (aiAnalysis.reading_level) {
+                html += `
+                    <div class="ai-issue-card reading-level-card" style="margin-top: 16px;">
+                        <span class="issue-type">reading level</span>
+                        <h4>Content Readability</h4>
+                        <p><strong>Current:</strong> ${aiAnalysis.reading_level.current || 'Not assessed'}</p>
+                        <p><strong>Target:</strong> ${aiAnalysis.reading_level.target || 'Grade 8'}</p>
+                        ${aiAnalysis.reading_level.recommendation ? `<p>${aiAnalysis.reading_level.recommendation}</p>` : ''}
+                    </div>
+                `;
+            }
+
+            // Total Fix Time
+            if (aiAnalysis.estimated_fix_time) {
+                html += `
+                    <div class="total-fix-time">
+                        <strong>Total Estimated Fix Time: ${aiAnalysis.estimated_fix_time}</strong>
+                    </div>
+                `;
+            }
+
+            aiContent.innerHTML = html || '<p>No AI insights available for this scan.</p>';
         }
 
         function formatRuleId(ruleId) {
