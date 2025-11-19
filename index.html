@@ -325,19 +325,28 @@
     <script>
         let trendChart = null;
 
-        function getCustomerIdFromURL() {
+        function getTokenFromURL() {
             const params = new URLSearchParams(window.location.search);
-            return params.get('customer_id') || params.get('id') || 'CUST001';
+            return params.get('token') || null;
         }
 
         async function loadDashboard() {
-            const customerId = getCustomerIdFromURL();
+            const token = getTokenFromURL();
+
+            if (!token) {
+                showUnauthorized('No access token provided. Please use your unique dashboard link.');
+                return;
+            }
 
             try {
-                const response = await fetch(`/api/customer-data?id=${customerId}`);
+                const response = await fetch(`/api/customer-data?token=${token}`);
 
                 if (!response.ok) {
                     const error = await response.json();
+                    if (response.status === 401) {
+                        showUnauthorized(error.error || 'Invalid access token.');
+                        return;
+                    }
                     throw new Error(error.error || 'Failed to load data');
                 }
 
@@ -346,11 +355,20 @@
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                showError(error.message);
+                if (error.message.includes('token')) {
+                    showUnauthorized(error.message);
+                } else {
+                    showError(error.message);
+                }
             }
         }
 
         function updateDashboard(data) {
+            // Store customer ID for rescan functionality
+            if (data.customer && data.customer.id) {
+                currentCustomerId = data.customer.id;
+            }
+
             // Update company name in header
             if (data.customer) {
                 document.getElementById('company-name').textContent =
@@ -505,8 +523,31 @@
             document.getElementById('violations-grid').innerHTML = `<div class="error">${message}</div>`;
         }
 
+        function showUnauthorized(message) {
+            document.getElementById('company-name').textContent = 'Access Denied';
+            document.getElementById('compliance-score').textContent = '--';
+            document.getElementById('last-scan').textContent = 'Unauthorized';
+            document.getElementById('customer-info').innerHTML = `
+                <div class="error">
+                    <strong>Unauthorized Access</strong><br><br>
+                    ${message}<br><br>
+                    <small>If you believe this is an error, please contact support.</small>
+                </div>
+            `;
+            document.getElementById('violations-grid').innerHTML = '';
+            document.getElementById('violation-counts').innerHTML = '';
+            document.getElementById('scan-btn').disabled = true;
+        }
+
+        // Store customer ID globally after loading
+        let currentCustomerId = null;
+
         async function requestRescan() {
-            const customerId = getCustomerIdFromURL();
+            if (!currentCustomerId) {
+                alert('Customer data not loaded. Please refresh the page.');
+                return;
+            }
+
             const btn = document.getElementById('scan-btn');
 
             btn.disabled = true;
@@ -518,7 +559,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ customer_id: customerId })
+                    body: JSON.stringify({ customer_id: currentCustomerId })
                 });
 
                 if (response.ok) {

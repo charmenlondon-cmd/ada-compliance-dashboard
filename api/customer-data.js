@@ -18,10 +18,10 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const customerId = req.query.id;
+    const token = req.query.token;
 
-    if (!customerId) {
-      return res.status(400).json({ error: 'customer_id required. Use ?id=CUST001' });
+    if (!token) {
+      return res.status(401).json({ error: 'Access token required. Please use your unique dashboard link.' });
     }
 
     // Initialize Google Sheets API
@@ -47,22 +47,25 @@ module.exports = async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // Fetch customer data from Customers sheet
+    // Fetch customer data from Customers sheet (A:L includes token column)
     const customerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Customers!A:J',
+      range: 'Customers!A:L',
     });
 
     const customerRows = customerResponse.data.values || [];
     const customerHeaders = customerRows[0] || [];
     const customerData = customerRows.slice(1);
 
-    // Find customer by ID (customer_id is column A, index 0)
-    const customer = customerData.find(row => row[0] === customerId);
+    // Find customer by token (token is column L, index 11)
+    const customer = customerData.find(row => row[11] === token);
 
     if (!customer) {
-      return res.status(404).json({ error: `Customer ${customerId} not found` });
+      return res.status(401).json({ error: 'Invalid access token. Please check your dashboard link.' });
     }
+
+    // Get the customer ID for fetching related data
+    const customerId = customer[0];
 
     // Map customer data to object
     const customerObj = {
