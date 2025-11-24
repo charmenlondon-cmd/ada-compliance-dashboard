@@ -126,14 +126,14 @@ module.exports = async function handler(req, res) {
 
     // Build historical data for trend chart (last 10 scans)
     const historical = customerScans.slice(0, 10).reverse().map(scan => ({
-      date: scan[9], // scan_date
-      score: parseInt(scan[4]) || 0, // compliance_score
+      date: scan[11], // scan_date (Column L)
+      score: parseInt(scan[5]) || 0, // compliance_score (Column F)
     }));
 
     // Build response matching dashboard expectations
     const response = {
-      score: latestScan ? parseInt(latestScan[4]) || 0 : 0,
-      lastScan: latestScan ? latestScan[9] : customerObj.last_scan_date,
+      score: latestScan ? parseInt(latestScan[5]) || 0 : 0,
+      lastScan: latestScan ? latestScan[11] : customerObj.last_scan_date,
       violations: violations.map(v => ({
         impact: v.impact,
         rule_id: v.rule_id,
@@ -155,13 +155,13 @@ module.exports = async function handler(req, res) {
       scan_summary: latestScan ? {
         scan_id: latestScan[0],
         pages_scanned: parseInt(latestScan[3]) || 0,
-        total_violations: parseInt(latestScan[5]) || 0,
-        critical_count: parseInt(latestScan[6]) || 0,
-        serious_count: parseInt(latestScan[7]) || 0,
-        moderate_count: parseInt(latestScan[8]) || 0,
-        minor_count: parseInt(latestScan[9]) || 0,
-        scan_duration: latestScan[10],
-        status: latestScan[11],
+        total_violations: parseInt(latestScan[6]) || 0,
+        critical_count: parseInt(latestScan[7]) || 0,
+        serious_count: parseInt(latestScan[8]) || 0,
+        moderate_count: parseInt(latestScan[9]) || 0,
+        minor_count: parseInt(latestScan[10]) || 0,
+        scan_duration: latestScan[12],
+        status: latestScan[13],
       } : null,
     };
 
