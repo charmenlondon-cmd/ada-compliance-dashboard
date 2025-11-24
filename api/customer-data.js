@@ -75,6 +75,9 @@ module.exports = async function handler(req, res) {
       status: customer[9],
     };
 
+    // Store the customer_id for filtering scans (works for both token and customer_id auth)
+    const actualCustomerId = customerObj.customer_id;
+
     // Fetch scan history from Scan Summary sheet
     const scansResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -85,10 +88,10 @@ module.exports = async function handler(req, res) {
     const scanData = scanRows.slice(1);
 
     // Filter scans for this customer (customer_id is column B, index 1)
-    const customerScans = scanData.filter(row => row[1] === customerId);
+    const customerScans = scanData.filter(row => row[1] === actualCustomerId);
 
-    // Sort by scan_date descending to get latest first
-    customerScans.sort((a, b) => new Date(b[9]) - new Date(a[9]));
+    // Sort by scan_date descending to get latest first (scan_date is Column K, index 10)
+    customerScans.sort((a, b) => new Date(b[10]) - new Date(a[10]));
 
     const latestScan = customerScans[0];
 
@@ -126,14 +129,14 @@ module.exports = async function handler(req, res) {
 
     // Build historical data for trend chart (last 10 scans)
     const historical = customerScans.slice(0, 10).reverse().map(scan => ({
-      date: scan[11], // scan_date (Column L)
-      score: parseInt(scan[5]) || 0, // compliance_score (Column F)
+      date: scan[10], // scan_date (Column K, index 10)
+      score: parseInt(scan[4]) || 0, // compliance_score (Column E, index 4)
     }));
 
     // Build response matching dashboard expectations
     const response = {
-      score: latestScan ? parseInt(latestScan[5]) || 0 : 0,
-      lastScan: latestScan ? latestScan[11] : customerObj.last_scan_date,
+      score: latestScan ? parseInt(latestScan[4]) || 0 : 0, // Column E (index 4)
+      lastScan: latestScan ? latestScan[10] : customerObj.last_scan_date, // Column K (index 10)
       violations: violations.map(v => ({
         impact: v.impact,
         rule_id: v.rule_id,
@@ -153,15 +156,15 @@ module.exports = async function handler(req, res) {
         status: customerObj.status,
       },
       scan_summary: latestScan ? {
-        scan_id: latestScan[0],
-        pages_scanned: parseInt(latestScan[3]) || 0,
-        total_violations: parseInt(latestScan[6]) || 0,
-        critical_count: parseInt(latestScan[7]) || 0,
-        serious_count: parseInt(latestScan[8]) || 0,
-        moderate_count: parseInt(latestScan[9]) || 0,
-        minor_count: parseInt(latestScan[10]) || 0,
-        scan_duration: latestScan[12],
-        status: latestScan[13],
+        scan_id: latestScan[0], // Column A (index 0)
+        pages_scanned: parseInt(latestScan[3]) || 0, // Column D (index 3)
+        total_violations: parseInt(latestScan[5]) || 0, // Column F (index 5)
+        critical_count: parseInt(latestScan[6]) || 0, // Column G (index 6)
+        serious_count: parseInt(latestScan[7]) || 0, // Column H (index 7)
+        moderate_count: parseInt(latestScan[8]) || 0, // Column I (index 8)
+        minor_count: parseInt(latestScan[9]) || 0, // Column J (index 9)
+        scan_duration: latestScan[11], // Column L (index 11)
+        status: latestScan[12], // Column M (index 12)
       } : null,
     };
 
