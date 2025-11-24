@@ -250,158 +250,6 @@
             font-size: 1.2rem;
         }
 
-        /* AI Insights Styles */
-        .ai-insights-section {
-            grid-column: 1 / -1;
-        }
-
-        .ai-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            line-height: 1.6;
-        }
-
-        .ai-summary h3 {
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .priority-fixes {
-            margin-top: 16px;
-        }
-
-        .priority-fix {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border-left: 4px solid #667eea;
-        }
-
-        .priority-fix .rank {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 24px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-right: 8px;
-        }
-
-        .priority-fix h4 {
-            display: inline;
-            font-size: 0.95rem;
-            color: #333;
-        }
-
-        .priority-fix .impact-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-left: 8px;
-            text-transform: uppercase;
-        }
-
-        .priority-fix .impact-badge.critical { background: #dc3545; color: white; }
-        .priority-fix .impact-badge.serious { background: #fd7e14; color: white; }
-        .priority-fix .impact-badge.moderate { background: #ffc107; color: #333; }
-        .priority-fix .impact-badge.minor { background: #17a2b8; color: white; }
-
-        .priority-fix .explanation {
-            margin: 10px 0;
-            font-size: 0.85rem;
-            color: #666;
-            line-height: 1.5;
-        }
-
-        .priority-fix .fix-suggestion {
-            background: #e8f4f8;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            color: #333;
-        }
-
-        .priority-fix .fix-suggestion strong {
-            color: #667eea;
-        }
-
-        .priority-fix .time-estimate {
-            margin-top: 8px;
-            font-size: 0.8rem;
-            color: #888;
-        }
-
-        .ai-issues-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-
-        .ai-issue-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 16px;
-            border-left: 4px solid #764ba2;
-        }
-
-        .ai-issue-card h4 {
-            font-size: 0.9rem;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .ai-issue-card .issue-type {
-            display: inline-block;
-            background: #764ba2;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-bottom: 8px;
-        }
-
-        .ai-issue-card p {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .ai-issue-card .wcag-ref {
-            font-size: 0.75rem;
-            color: #888;
-            font-style: italic;
-        }
-
-        .reading-level-card {
-            background: #fff8f0;
-            border-left-color: #fd7e14;
-        }
-
-        .total-fix-time {
-            text-align: center;
-            padding: 16px;
-            background: #e8f4f8;
-            border-radius: 8px;
-            margin-top: 16px;
-        }
-
-        .total-fix-time strong {
-            color: #667eea;
-            font-size: 1.1rem;
-        }
-
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8rem;
@@ -463,14 +311,6 @@
                 </div>
             </div>
 
-            <!-- AI Insights -->
-            <div class="card ai-insights-section" id="ai-insights-section" style="display: none;">
-                <h2>AI Accessibility Insights</h2>
-                <div id="ai-insights-content">
-                    <div class="loading">Loading AI insights...</div>
-                </div>
-            </div>
-
             <!-- Violations -->
             <div class="card violations-section">
                 <h2>Recent Violations</h2>
@@ -485,28 +325,32 @@
     <script>
         let trendChart = null;
 
-        function getTokenFromURL() {
+        function getAuthFromURL() {
             const params = new URLSearchParams(window.location.search);
-            return params.get('token') || null;
+            const token = params.get('token');
+            const customerId = params.get('customer_id') || params.get('id');
+
+            return { token, customerId };
         }
 
         async function loadDashboard() {
-            const token = getTokenFromURL();
-
-            if (!token) {
-                showUnauthorized('No access token provided. Please use your unique dashboard link.');
-                return;
-            }
+            const { token, customerId } = getAuthFromURL();
 
             try {
-                const response = await fetch(`/api/customer-data?token=${token}`);
+                // Build API URL - prefer token if provided (for free scans), fallback to customer_id
+                let apiUrl;
+                if (token) {
+                    apiUrl = `/api/customer-data?token=${token}`;
+                } else if (customerId) {
+                    apiUrl = `/api/customer-data?id=${customerId}`;
+                } else {
+                    throw new Error('No authentication provided. Please use ?token=YOUR_TOKEN or ?customer_id=YOUR_ID');
+                }
+
+                const response = await fetch(apiUrl);
 
                 if (!response.ok) {
                     const error = await response.json();
-                    if (response.status === 401) {
-                        showUnauthorized(error.error || 'Invalid access token.');
-                        return;
-                    }
                     throw new Error(error.error || 'Failed to load data');
                 }
 
@@ -515,32 +359,20 @@
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                if (error.message.includes('token')) {
-                    showUnauthorized(error.message);
-                } else {
-                    showError(error.message);
-                }
+                showError(error.message);
             }
         }
 
         function updateDashboard(data) {
-            // Store customer ID for rescan functionality
+            // Store customer_id globally for rescan functionality
             if (data.customer && data.customer.id) {
-                currentCustomerId = data.customer.id;
+                window.customerIdFromData = data.customer.id;
             }
 
             // Update company name in header
             if (data.customer) {
                 document.getElementById('company-name').textContent =
                     data.customer.company_name || 'Your Company';
-            }
-
-            // Check if scan is still in progress
-            if (data.customer && data.customer.status === 'scanning') {
-                showScanInProgress(data.customer.company_name);
-                // Auto-refresh every 10 seconds while scanning
-                setTimeout(loadDashboard, 10000);
-                return;
             }
 
             // Update compliance score
@@ -605,120 +437,11 @@
                     </div>
                 `).join('');
             } else {
-                violationsGrid.innerHTML = '<div class="no-violations">No violations found! Great job!</div>';
+                violationsGrid.innerHTML = '<div class="no-violations">🎉 No violations found! Great job!</div>';
             }
 
             // Update trend chart
             updateTrendChart(data.historical || []);
-
-            // Update AI insights
-            updateAIInsights(data.ai_analysis);
-        }
-
-        function updateAIInsights(aiAnalysis) {
-            const aiSection = document.getElementById('ai-insights-section');
-            const aiContent = document.getElementById('ai-insights-content');
-
-            if (!aiAnalysis) {
-                aiSection.style.display = 'none';
-                return;
-            }
-
-            aiSection.style.display = 'block';
-
-            let html = '';
-
-            // Summary
-            if (aiAnalysis.summary) {
-                html += `
-                    <div class="ai-summary">
-                        <h3>Summary</h3>
-                        <p>${aiAnalysis.summary}</p>
-                    </div>
-                `;
-            }
-
-            // Priority Fixes
-            if (aiAnalysis.priority_fixes && aiAnalysis.priority_fixes.length > 0) {
-                html += '<div class="priority-fixes"><h3 style="margin-bottom: 12px; color: #333;">Priority Fixes</h3>';
-                aiAnalysis.priority_fixes.forEach((fix, index) => {
-                    const rank = fix.rank || index + 1;
-                    const impact = fix.impact || 'moderate';
-                    html += `
-                        <div class="priority-fix">
-                            <div>
-                                <span class="rank">${rank}</span>
-                                <h4>${fix.issue}</h4>
-                                <span class="impact-badge ${impact}">${impact}</span>
-                            </div>
-                            <p class="explanation">${fix.explanation}</p>
-                            <div class="fix-suggestion">
-                                <strong>How to fix:</strong> ${fix.fix}
-                            </div>
-                            ${fix.estimated_time ? `<div class="time-estimate">Estimated time: ${fix.estimated_time}</div>` : ''}
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
-
-            // Visual Issues (Advanced AI)
-            if (aiAnalysis.visual_issues && aiAnalysis.visual_issues.length > 0) {
-                html += '<h3 style="margin: 20px 0 12px; color: #333;">Visual Issues</h3><div class="ai-issues-grid">';
-                aiAnalysis.visual_issues.forEach(issue => {
-                    html += `
-                        <div class="ai-issue-card">
-                            <span class="issue-type">${issue.type || 'visual'}</span>
-                            <h4>${issue.description}</h4>
-                            ${issue.location ? `<p><strong>Location:</strong> ${issue.location}</p>` : ''}
-                            <p>${issue.recommendation}</p>
-                            ${issue.wcag_criterion ? `<span class="wcag-ref">WCAG: ${issue.wcag_criterion}</span>` : ''}
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
-
-            // Content Issues (Advanced AI)
-            if (aiAnalysis.content_issues && aiAnalysis.content_issues.length > 0) {
-                html += '<h3 style="margin: 20px 0 12px; color: #333;">Content Issues</h3><div class="ai-issues-grid">';
-                aiAnalysis.content_issues.forEach(issue => {
-                    html += `
-                        <div class="ai-issue-card">
-                            <span class="issue-type">${issue.type || 'content'}</span>
-                            <h4>${issue.description}</h4>
-                            ${issue.examples ? `<p><strong>Examples:</strong> ${issue.examples.join(', ')}</p>` : ''}
-                            <p>${issue.recommendation}</p>
-                            ${issue.wcag_criterion ? `<span class="wcag-ref">WCAG: ${issue.wcag_criterion}</span>` : ''}
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
-
-            // Reading Level (Advanced AI)
-            if (aiAnalysis.reading_level) {
-                html += `
-                    <div class="ai-issue-card reading-level-card" style="margin-top: 16px;">
-                        <span class="issue-type">reading level</span>
-                        <h4>Content Readability</h4>
-                        <p><strong>Current:</strong> ${aiAnalysis.reading_level.current || 'Not assessed'}</p>
-                        <p><strong>Target:</strong> ${aiAnalysis.reading_level.target || 'Grade 8'}</p>
-                        ${aiAnalysis.reading_level.recommendation ? `<p>${aiAnalysis.reading_level.recommendation}</p>` : ''}
-                    </div>
-                `;
-            }
-
-            // Total Fix Time
-            if (aiAnalysis.estimated_fix_time) {
-                html += `
-                    <div class="total-fix-time">
-                        <strong>Total Estimated Fix Time: ${aiAnalysis.estimated_fix_time}</strong>
-                    </div>
-                `;
-            }
-
-            aiContent.innerHTML = html || '<p>No AI insights available for this scan.</p>';
         }
 
         function formatRuleId(ruleId) {
@@ -800,65 +523,27 @@
             document.getElementById('violations-grid').innerHTML = `<div class="error">${message}</div>`;
         }
 
-        function showUnauthorized(message) {
-            document.getElementById('company-name').textContent = 'Access Denied';
-            document.getElementById('compliance-score').textContent = '--';
-            document.getElementById('last-scan').textContent = 'Unauthorized';
-            document.getElementById('customer-info').innerHTML = `
-                <div class="error">
-                    <strong>Unauthorized Access</strong><br><br>
-                    ${message}<br><br>
-                    <small>If you believe this is an error, please contact support.</small>
-                </div>
-            `;
-            document.getElementById('violations-grid').innerHTML = '';
-            document.getElementById('violation-counts').innerHTML = '';
-            document.getElementById('scan-btn').disabled = true;
-        }
-
-        function showScanInProgress(companyName) {
-            document.getElementById('company-name').textContent = companyName || 'Your Company';
-            document.getElementById('compliance-score').innerHTML = '<span style="font-size: 2rem;">⏳</span>';
-            document.getElementById('last-scan').textContent = 'Scan in progress...';
-            document.getElementById('customer-info').innerHTML = `
-                <div style="text-align: center; color: #667eea;">
-                    <strong>Your accessibility scan is running</strong><br><br>
-                    This usually takes 30-60 seconds.<br>
-                    The page will automatically update when complete.
-                </div>
-            `;
-            document.getElementById('violations-grid').innerHTML = `
-                <div class="loading" style="grid-column: 1 / -1;">
-                    <div style="font-size: 1.5rem; margin-bottom: 10px;">🔍</div>
-                    Scanning your website for accessibility issues...
-                </div>
-            `;
-            document.getElementById('violation-counts').innerHTML = '';
-            document.getElementById('scan-btn').disabled = true;
-            document.getElementById('scan-btn').textContent = 'Scan in Progress...';
-        }
-
-        // Store customer ID globally after loading
-        let currentCustomerId = null;
-
         async function requestRescan() {
-            if (!currentCustomerId) {
-                alert('Customer data not loaded. Please refresh the page.');
-                return;
-            }
-
+            const { token, customerId } = getAuthFromURL();
             const btn = document.getElementById('scan-btn');
 
             btn.disabled = true;
             btn.textContent = 'Requesting...';
 
             try {
+                // Use customer_id for rescan request (token is for initial access only)
+                const scanCustomerId = customerId || window.customerIdFromData;
+
+                if (!scanCustomerId) {
+                    throw new Error('Cannot determine customer ID for rescan');
+                }
+
                 const response = await fetch('https://bisonblu.app.n8n.cloud/webhook/trigger-scan', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ customer_id: currentCustomerId })
+                    body: JSON.stringify({ customer_id: scanCustomerId })
                 });
 
                 if (response.ok) {

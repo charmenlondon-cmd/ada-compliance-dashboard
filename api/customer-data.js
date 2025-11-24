@@ -19,27 +19,17 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = req.query.token;
+    const customerId = req.query.id;
 
-    if (!token) {
-      return res.status(401).json({ error: 'Access token required. Please use your unique dashboard link.' });
+    if (!token && !customerId) {
+      return res.status(400).json({ error: 'Authentication required. Use ?token=YOUR_TOKEN or ?id=CUST001' });
     }
 
     // Initialize Google Sheets API
-    // Handle private key - works whether Vercel stores it with literal \n or actual line breaks
-    let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
-    // If the key contains literal \n strings, convert them to actual newlines
-    if (privateKey.includes('\\n')) {
-      privateKey = privateKey.replace(/\\n/g, '\n');
-    }
-    // Also handle escaped backslashes
-    if (privateKey.includes('\\\\n')) {
-      privateKey = privateKey.replace(/\\\\n/g, '\n');
-    }
-
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: privateKey,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
@@ -47,7 +37,7 @@ module.exports = async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // Fetch customer data from Customers sheet (A:L includes token column)
+    // Fetch customer data from Customers sheet (now including Column L for token)
     const customerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Customers!A:L',
@@ -57,15 +47,19 @@ module.exports = async function handler(req, res) {
     const customerHeaders = customerRows[0] || [];
     const customerData = customerRows.slice(1);
 
-    // Find customer by token (token is column L, index 11)
-    const customer = customerData.find(row => row[11] === token);
-
-    if (!customer) {
-      return res.status(401).json({ error: 'Invalid access token. Please check your dashboard link.' });
+    // Find customer by token (Column L, index 11) or by customer_id (Column A, index 0)
+    let customer;
+    if (token) {
+      customer = customerData.find(row => row[11] === token);
+      if (!customer) {
+        return res.status(404).json({ error: 'Invalid or expired token' });
+      }
+    } else {
+      customer = customerData.find(row => row[0] === customerId);
+      if (!customer) {
+        return res.status(404).json({ error: `Customer ${customerId} not found` });
+      }
     }
-
-    // Get the customer ID for fetching related data
-    const customerId = customer[0];
 
     // Map customer data to object
     const customerObj = {
@@ -81,10 +75,10 @@ module.exports = async function handler(req, res) {
       status: customer[9],
     };
 
-    // Fetch scan history from Scan Summary sheet
+    // Fetch scan history from Scan_Summary sheet
     const scansResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "'Scan Summary'!A:M",
+      range: 'Scan_Summary!A:M',
     });
 
     const scanRows = scansResponse.data.values || [];
