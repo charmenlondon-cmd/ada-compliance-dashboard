@@ -75,10 +75,10 @@ module.exports = async function handler(req, res) {
       status: customer[9],
     };
 
-    // Fetch scan history from Scan_Summary sheet
+    // Fetch scan history from Scan Summary sheet
     const scansResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Scan_Summary!A:M',
+      range: 'Scan Summary!A:M',
     });
 
     const scanRows = scansResponse.data.values || [];
