@@ -108,8 +108,34 @@ module.exports = async function handler(req, res) {
       const violationRows = violationsResponse.data.values || [];
       const violationData = violationRows.slice(1);
 
-      // Filter violations for latest scan (scan_id is column B, index 1)
-      const scanViolations = violationData.filter(row => row[1] === latestScanId);
+      // Normalize latestScanId for comparison (trim whitespace, convert to string)
+      const normalizedScanId = String(latestScanId || '').trim();
+
+      // Debug logging: Show what we're looking for
+      console.log('[DEBUG] Latest Scan ID:', normalizedScanId);
+      console.log('[DEBUG] Total violation rows:', violationData.length);
+
+      // Log first 3 violation scan_ids for comparison
+      if (violationData.length > 0) {
+        console.log('[DEBUG] Sample violation scan_ids:',
+          violationData.slice(0, 3).map(row => `"${row[1]}" (type: ${typeof row[1]})`));
+      }
+
+      // Filter violations for latest scan with robust comparison
+      const scanViolations = violationData.filter(row => {
+        // Safety check: ensure row has at least 2 columns
+        if (!row || row.length < 2) {
+          return false;
+        }
+
+        // Normalize the scan_id from the violation row (column B, index 1)
+        const rowScanId = String(row[1] || '').trim();
+
+        // Return true if normalized values match
+        return rowScanId === normalizedScanId;
+      });
+
+      console.log('[DEBUG] Matching violations found:', scanViolations.length);
 
       violations = scanViolations.map(v => ({
         violation_id: v[0],
