@@ -325,6 +325,48 @@
     <script>
         let trendChart = null;
 
+        async function validateSession() {
+            const params = new URLSearchParams(window.location.search);
+            const session = params.get('session');
+
+            // If no session parameter, fall back to old auth methods
+            if (!session) {
+                return true;
+            }
+
+            try {
+                const response = await fetch('/api/validate-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Session expired or invalid');
+                }
+
+                const data = await response.json();
+
+                if (!data.valid) {
+                    throw new Error(data.error || 'Session validation failed');
+                }
+
+                // Store customer_id globally for dashboard API calls
+                window.authenticatedCustomerId = data.customer_id;
+                window.authenticatedEmail = data.email;
+                window.authenticatedPlan = data.plan;
+
+                console.log('Session validated successfully for:', data.email);
+                return true;
+
+            } catch (error) {
+                console.error('Session validation error:', error);
+                // Redirect to login page with error message
+                window.location.href = 'https://bisonblu.com/ada-login?error=session_expired';
+                return false;
+            }
+        }
+
         function getAuthFromURL() {
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
@@ -334,14 +376,25 @@
         }
 
         async function loadDashboard() {
+            // Validate session first (if ?session= parameter exists)
+            const sessionValid = await validateSession();
+            if (!sessionValid) {
+                return; // validateSession() handles redirect to login
+            }
+
             const { token, customerId } = getAuthFromURL();
 
             try {
-                // Build API URL - prefer token if provided (for free scans), fallback to customer_id
+                // Build API URL - priority: session auth > token > customer_id
                 let apiUrl;
-                if (token) {
+                if (window.authenticatedCustomerId) {
+                    // New session-based auth (from validateSession)
+                    apiUrl = `/api/customer-data?id=${window.authenticatedCustomerId}`;
+                } else if (token) {
+                    // Old token-based auth (backward compatible)
                     apiUrl = `/api/customer-data?token=${token}`;
                 } else if (customerId) {
+                    // Old customer_id auth (backward compatible)
                     apiUrl = `/api/customer-data?id=${customerId}`;
                 } else {
                     throw new Error('No authentication provided. Please use ?token=YOUR_TOKEN or ?customer_id=YOUR_ID');
