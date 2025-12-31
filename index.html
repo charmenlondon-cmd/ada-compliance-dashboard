@@ -30,29 +30,29 @@
         .nav-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 70px;
+            height: 140px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             text-decoration: none;
         }
 
         .logo-icon {
-            height: 50px;
+            height: 100px;
             width: auto;
         }
 
         .logo-text-img {
-            height: 40px;
+            height: 80px;
             width: auto;
-            margin-left: 8px;
+            margin-left: 12px;
         }
 
         /* Burger Menu */
@@ -61,15 +61,15 @@
         }
 
         .burger-icon {
-            width: 35px;
-            height: 35px;
+            width: 60px;
+            height: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 6px;
+            gap: 10px;
             cursor: pointer;
-            padding: 5px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 8px;
             transition: background 0.3s;
         }
 
@@ -78,15 +78,15 @@
         }
 
         .burger-line {
-            width: 25px;
-            height: 3px;
+            width: 40px;
+            height: 5px;
             background: #007480;
-            border-radius: 2px;
+            border-radius: 3px;
             transition: all 0.3s;
         }
 
         .burger-icon.active .burger-line:nth-child(1) {
-            transform: rotate(45deg) translateY(9px);
+            transform: rotate(45deg) translateY(15px);
         }
 
         .burger-icon.active .burger-line:nth-child(2) {
@@ -94,18 +94,18 @@
         }
 
         .burger-icon.active .burger-line:nth-child(3) {
-            transform: rotate(-45deg) translateY(-9px);
+            transform: rotate(-45deg) translateY(-15px);
         }
 
         /* Dropdown Menu */
         .nav-dropdown {
             position: absolute;
-            top: 50px;
+            top: 80px;
             right: 0;
             background: white;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            min-width: 250px;
+            min-width: 280px;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
@@ -197,20 +197,18 @@
         .header {
             text-align: center;
             color: #002059;
-            margin-bottom: 50px;
-            padding: 40px 20px;
+            margin-bottom: 30px;
         }
 
         .header h1 {
-            font-size: 5rem;
-            margin-bottom: 20px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             font-weight: 700;
-            line-height: 1.2;
         }
 
         .header p {
             color: #606887;
-            font-size: 1.5rem;
+            font-size: 1.1rem;
         }
 
         .dashboard-grid {
@@ -481,11 +479,11 @@
 
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 2.5rem;
+                font-size: 1.8rem;
             }
 
             .header p {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
 
             .score-value {
@@ -493,15 +491,40 @@
             }
 
             .nav-container {
-                padding: 0 15px;
+                padding: 0 20px;
+                height: 90px;
             }
 
             .logo-icon {
-                height: 40px;
+                height: 60px;
             }
 
             .logo-text-img {
-                height: 32px;
+                height: 48px;
+            }
+
+            .burger-icon {
+                width: 45px;
+                height: 45px;
+                gap: 7px;
+                padding: 7px;
+            }
+
+            .burger-line {
+                width: 30px;
+                height: 4px;
+            }
+
+            .burger-icon.active .burger-line:nth-child(1) {
+                transform: rotate(45deg) translateY(11px);
+            }
+
+            .burger-icon.active .burger-line:nth-child(3) {
+                transform: rotate(-45deg) translateY(-11px);
+            }
+
+            .nav-dropdown {
+                top: 60px;
             }
         }
     </style>
