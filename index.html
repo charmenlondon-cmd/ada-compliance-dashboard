@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADA Compliance Dashboard</title>
+    <title>ADA Compliance Dashboard - Bison Blu AI Labs</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -14,19 +14,189 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #a8c5f0 0%, #c7d9f5 100%);
             min-height: 100vh;
-            padding: 20px;
         }
 
+        /* Top Navigation Bar */
+        .top-nav {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text-img {
+            height: 40px;
+            width: auto;
+            margin-left: 8px;
+        }
+
+        /* Burger Menu */
+        .burger-menu {
+            position: relative;
+        }
+
+        .burger-icon {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        .burger-icon:hover {
+            background: #f0f4f8;
+        }
+
+        .burger-line {
+            width: 25px;
+            height: 3px;
+            background: #4a7bd9;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .burger-icon.active .burger-line:nth-child(1) {
+            transform: rotate(45deg) translateY(9px);
+        }
+
+        .burger-icon.active .burger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .burger-icon.active .burger-line:nth-child(3) {
+            transform: rotate(-45deg) translateY(-9px);
+        }
+
+        /* Dropdown Menu */
+        .nav-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            min-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .nav-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .nav-item:last-child {
+            border-bottom: none;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .nav-item:hover {
+            background: #f8f9fa;
+            color: #4a7bd9;
+        }
+
+        .nav-item.has-submenu {
+            position: relative;
+        }
+
+        .nav-item.has-submenu::after {
+            content: '›';
+            position: absolute;
+            right: 20px;
+            font-size: 1.3rem;
+            transition: transform 0.3s;
+        }
+
+        .nav-item.has-submenu.expanded::after {
+            transform: rotate(90deg);
+        }
+
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+            background: #f8f9fa;
+        }
+
+        .submenu.expanded {
+            max-height: 500px;
+        }
+
+        .submenu-item {
+            padding: 12px 20px 12px 40px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .submenu-item:hover {
+            background: #e9ecef;
+            color: #4a7bd9;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 8px 0;
+        }
+
+        /* Main Content */
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 30px 20px;
         }
 
         .header {
             text-align: center;
-            color: white;
+            color: #2c5aa0;
             margin-bottom: 30px;
         }
 
@@ -36,7 +206,8 @@
         }
 
         .header p {
-            opacity: 0.9;
+            opacity: 0.8;
+            color: #4a7bd9;
         }
 
         .dashboard-grid {
@@ -68,7 +239,7 @@
         .score-value {
             font-size: 4rem;
             font-weight: 700;
-            color: #667eea;
+            color: #4a7bd9;
         }
 
         .score-label {
@@ -87,7 +258,7 @@
         }
 
         .customer-info strong {
-            color: #667eea;
+            color: #4a7bd9;
         }
 
         .action-buttons {
@@ -112,7 +283,7 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #4a7bd9;
             color: white;
         }
 
@@ -179,7 +350,7 @@
         }
 
         .violation-card a {
-            color: #667eea;
+            color: #4a7bd9;
             text-decoration: none;
             font-size: 0.85rem;
         }
@@ -258,10 +429,82 @@
             .score-value {
                 font-size: 3rem;
             }
+
+            .nav-container {
+                padding: 0 15px;
+            }
+
+            .logo-icon {
+                height: 40px;
+            }
+
+            .logo-text-img {
+                height: 32px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="https://bisonblu.com" class="logo">
+                <img src="/logo-icon.png" alt="Bison Blu" class="logo-icon">
+                <img src="/logo-text.png" alt="AI Labs" class="logo-text-img">
+            </a>
+
+            <div class="burger-menu">
+                <div class="burger-icon" id="burgerIcon">
+                    <span class="burger-line"></span>
+                    <span class="burger-line"></span>
+                    <span class="burger-line"></span>
+                </div>
+
+                <div class="nav-dropdown" id="navDropdown">
+                    <div class="nav-item" onclick="window.location.href='https://bisonblu.com'">
+                        🏠 Home
+                    </div>
+
+                    <div class="nav-divider"></div>
+
+                    <div class="nav-item has-submenu" id="myAccountToggle">
+                        👤 My Account
+                    </div>
+                    <div class="submenu" id="myAccountSubmenu">
+                        <div class="submenu-item" onclick="alert('Current Plan feature coming soon')">
+                            📋 Current Plan
+                        </div>
+                        <div class="submenu-item" onclick="alert('Expiry Date feature coming soon')">
+                            📅 Expiry Date
+                        </div>
+                        <div class="submenu-item" onclick="alert('Billing feature coming soon')">
+                            💳 Billing
+                        </div>
+                        <div class="submenu-item" onclick="alert('Linked Websites feature coming soon')">
+                            🔗 Linked Websites
+                        </div>
+                        <div class="submenu-item" onclick="alert('Change Password feature coming soon')">
+                            🔑 Change Password
+                        </div>
+                        <div class="submenu-item" onclick="alert('Cancel Subscription feature coming soon')">
+                            ⚠️ Cancel Subscription
+                        </div>
+                        <div class="submenu-item" onclick="alert('Delete Account feature coming soon')">
+                            🗑️ Delete Account
+                        </div>
+                    </div>
+
+                    <div class="nav-divider"></div>
+
+                    <div class="nav-item" onclick="logout()">
+                        🚪 Logout
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
     <div class="container">
         <div class="header">
             <h1>ADA Compliance Dashboard</h1>
@@ -324,6 +567,41 @@
 
     <script>
         let trendChart = null;
+
+        // Burger menu toggle
+        document.getElementById('burgerIcon').addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+            document.getElementById('navDropdown').classList.toggle('active');
+        });
+
+        // My Account submenu toggle
+        document.getElementById('myAccountToggle').addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('expanded');
+            document.getElementById('myAccountSubmenu').classList.toggle('expanded');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function() {
+            document.getElementById('burgerIcon').classList.remove('active');
+            document.getElementById('navDropdown').classList.remove('active');
+        });
+
+        // Prevent menu from closing when clicking inside
+        document.getElementById('navDropdown').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear any stored session data
+                localStorage.clear();
+                sessionStorage.clear();
+                // Redirect to home
+                window.location.href = 'https://bisonblu.com';
+            }
+        }
 
         async function validateSession() {
             const params = new URLSearchParams(window.location.search);
@@ -532,12 +810,12 @@
                     datasets: [{
                         label: 'Compliance Score',
                         data: historical.map(h => h.score),
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderColor: '#4a7bd9',
+                        backgroundColor: 'rgba(74, 123, 217, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#667eea',
+                        pointBackgroundColor: '#4a7bd9',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
                         pointRadius: 5
