@@ -65,177 +65,6 @@
             margin-left: 12px;
         }
 
-        /* Burger Menu */
-        .burger-menu {
-            position: relative;
-        }
-
-        .burger-icon {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-            transition: background 0.3s;
-            background: none;
-            border: none;
-            outline: none;
-        }
-
-        .burger-icon:focus-visible {
-            outline: 2px solid #007480;
-            outline-offset: 2px;
-        }
-
-        .burger-icon:hover {
-            background: #f0f4f8;
-        }
-
-        .burger-line {
-            width: 40px;
-            height: 5px;
-            background: #000000;
-            border-radius: 3px;
-            transition: all 0.3s;
-        }
-
-        .burger-icon.active .burger-line:nth-child(1) {
-            transform: rotate(45deg) translateY(15px);
-        }
-
-        .burger-icon.active .burger-line:nth-child(2) {
-            opacity: 0;
-        }
-
-        .burger-icon.active .burger-line:nth-child(3) {
-            transform: rotate(-45deg) translateY(-15px);
-        }
-
-        /* Dropdown Menu */
-        .nav-dropdown {
-            position: absolute;
-            top: 80px;
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            min-width: 280px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s;
-        }
-
-        .nav-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .nav-item {
-            padding: 14px 20px;
-            cursor: pointer;
-            transition: background 0.2s;
-            border-bottom: 1px solid #f0f0f0;
-            color: #333;
-            font-size: 0.95rem;
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-        }
-
-        .nav-item:first-child {
-            border-radius: 12px 12px 0 0;
-        }
-
-        .nav-item:last-child {
-            border-bottom: none;
-            border-radius: 0 0 12px 12px;
-        }
-
-        .nav-item:hover {
-            background: #f8f9fa;
-            color: #007480;
-        }
-
-        .nav-item.has-submenu {
-            position: relative;
-        }
-
-        .nav-item.has-submenu::after {
-            content: '›';
-            position: absolute;
-            right: 20px;
-            font-size: 1.3rem;
-            transition: transform 0.3s;
-        }
-
-        .nav-item.has-submenu.expanded::after {
-            transform: rotate(90deg);
-        }
-
-        .submenu {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s;
-            background: #f8f9fa;
-        }
-
-        .submenu.expanded {
-            max-height: 500px;
-        }
-
-        .submenu-item {
-            padding: 12px 20px 12px 40px;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: #555;
-            font-size: 0.9rem;
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-        }
-
-        .submenu-item:hover {
-            background: #e9ecef;
-            color: #007480;
-        }
-
-        .submenu-item-info {
-            cursor: default;
-            background: #ffffff;
-            border-left: 3px solid #007480;
-            margin: 4px 8px;
-            border-radius: 4px;
-            line-height: 1.6;
-        }
-
-        .submenu-item-info:hover {
-            background: #ffffff;
-            color: #555;
-        }
-
-        .submenu-item-info strong {
-            color: #007480;
-            font-weight: 600;
-            display: block;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
-        }
-
-        .submenu-item-info span {
-            color: #333;
-            font-weight: 400;
-            font-size: 0.9rem;
-        }
-
-        .nav-divider {
-            height: 1px;
-            background: #e0e0e0;
-            margin: 8px 0;
-        }
 
         /* Main Content */
         .container {
@@ -698,30 +527,6 @@
                 height: 48px;
             }
 
-            .burger-icon {
-                width: 45px;
-                height: 45px;
-                gap: 7px;
-                padding: 7px;
-            }
-
-            .burger-line {
-                width: 30px;
-                height: 4px;
-            }
-
-            .burger-icon.active .burger-line:nth-child(1) {
-                transform: rotate(45deg) translateY(11px);
-            }
-
-            .burger-icon.active .burger-line:nth-child(3) {
-                transform: rotate(-45deg) translateY(-11px);
-            }
-
-            .nav-dropdown {
-                top: 60px;
-            }
-
             .return-to-top {
                 width: 50px;
                 height: 50px;
@@ -741,52 +546,58 @@
                 <img src="/logo-text.png" alt="AI Labs" class="logo-text-img">
             </a>
 
-            <div class="burger-menu">
-                <button class="burger-icon" id="burgerIcon" aria-label="Toggle navigation menu" aria-expanded="false">
-                    <span class="burger-line"></span>
-                    <span class="burger-line"></span>
-                    <span class="burger-line"></span>
-                </button>
+            <button id="menuButton" style="background: #007480; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
+                Menu
+            </button>
 
-                <div class="nav-dropdown" id="navDropdown">
-                    <div class="nav-item" onclick="window.location.href='https://bisonblu.com'">
-                        Home
+            <div id="menuDropdown" style="display: none; position: absolute; top: 140px; right: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; z-index: 1001;">
+                <div style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" onclick="window.location.href='https://bisonblu.com'">
+                    Home
+                </div>
+
+                <div style="height: 1px; background: #e0e0e0; margin: 8px 0;"></div>
+
+                <div id="accountSection" style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;">
+                    My Account <span id="accountArrow">▼</span>
+                </div>
+
+                <div id="accountDetails" style="display: none; background: #f8f9fa; padding: 8px 0;">
+                    <div style="padding: 12px 20px; font-size: 14px; border-left: 3px solid #007480; margin: 4px 8px; background: white; border-radius: 4px;">
+                        <div style="color: #007480; font-weight: 600; font-size: 11px; text-transform: uppercase;">CURRENT PLAN</div>
+                        <div id="planDisplay">Loading...</div>
                     </div>
 
-                    <div class="nav-divider"></div>
-
-                    <div class="nav-item has-submenu" id="myAccountToggle">
-                        My Account
-                    </div>
-                    <div class="submenu" id="myAccountSubmenu">
-                        <div class="submenu-item submenu-item-info" id="currentPlan">
-                            <strong>Current Plan:</strong> <span id="planValue">Loading...</span>
-                        </div>
-                        <div class="submenu-item submenu-item-info" id="expiryDate">
-                            <strong>Expiry Date:</strong> <span id="expiryValue">Loading...</span>
-                        </div>
-                        <div class="submenu-item submenu-item-info" id="linkedWebsites">
-                            <strong>Linked Website:</strong> <span id="websiteValue">Loading...</span>
-                        </div>
-                        <div class="submenu-item" onclick="alert('Billing feature coming soon')">
-                            Billing
-                        </div>
-                        <div class="submenu-item" onclick="alert('Change Password feature coming soon')">
-                            Change Password
-                        </div>
-                        <div class="submenu-item" onclick="showCancelSubscription()">
-                            Cancel Subscription
-                        </div>
-                        <div class="submenu-item" onclick="alert('Delete Account feature coming soon')">
-                            Delete Account
-                        </div>
+                    <div style="padding: 12px 20px; font-size: 14px; border-left: 3px solid #007480; margin: 4px 8px; background: white; border-radius: 4px;">
+                        <div style="color: #007480; font-weight: 600; font-size: 11px; text-transform: uppercase;">EXPIRY DATE</div>
+                        <div id="expiryDisplay">Loading...</div>
                     </div>
 
-                    <div class="nav-divider"></div>
-
-                    <div class="nav-item" onclick="logout()">
-                        Logout
+                    <div style="padding: 12px 20px; font-size: 14px; border-left: 3px solid #007480; margin: 4px 8px; background: white; border-radius: 4px;">
+                        <div style="color: #007480; font-weight: 600; font-size: 11px; text-transform: uppercase;">LINKED WEBSITE</div>
+                        <div id="websiteDisplay">Loading...</div>
                     </div>
+
+                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Billing coming soon')">
+                        Billing
+                    </div>
+
+                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Change Password coming soon')">
+                        Change Password
+                    </div>
+
+                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="startCancellation()">
+                        Cancel Subscription
+                    </div>
+
+                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Delete Account coming soon')">
+                        Delete Account
+                    </div>
+                </div>
+
+                <div style="height: 1px; background: #e0e0e0; margin: 8px 0;"></div>
+
+                <div style="padding: 14px 20px; cursor: pointer;" onclick="logout()">
+                    Logout
                 </div>
             </div>
         </div>
@@ -927,32 +738,32 @@
             });
         });
 
-        // Burger menu toggle
-        document.getElementById('burgerIcon').addEventListener('click', function(e) {
-            e.stopPropagation();
-            const isActive = this.classList.toggle('active');
-            document.getElementById('navDropdown').classList.toggle('active');
-            // Update aria-expanded for accessibility
-            this.setAttribute('aria-expanded', isActive ? 'true' : 'false');
-        });
+        // Simple menu toggle
+        document.getElementById('menuButton').onclick = function() {
+            var dropdown = document.getElementById('menuDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        };
 
-        // My Account submenu toggle
-        document.getElementById('myAccountToggle').addEventListener('click', function(e) {
+        // My Account toggle
+        document.getElementById('accountSection').onclick = function(e) {
             e.stopPropagation();
-            this.classList.toggle('expanded');
-            document.getElementById('myAccountSubmenu').classList.toggle('expanded');
-        });
+            var details = document.getElementById('accountDetails');
+            var arrow = document.getElementById('accountArrow');
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                arrow.textContent = '▲';
+            } else {
+                details.style.display = 'none';
+                arrow.textContent = '▼';
+            }
+        };
 
         // Close menu when clicking outside
-        document.addEventListener('click', function() {
-            document.getElementById('burgerIcon').classList.remove('active');
-            document.getElementById('navDropdown').classList.remove('active');
-        });
-
-        // Prevent menu from closing when clicking inside
-        document.getElementById('navDropdown').addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+        document.onclick = function(e) {
+            if (!e.target.closest('#menuButton') && !e.target.closest('#menuDropdown')) {
+                document.getElementById('menuDropdown').style.display = 'none';
+            }
+        };
 
         // Modal event listeners
         document.getElementById('cancelModal').addEventListener('click', function(e) {
@@ -1158,38 +969,38 @@
             if (!customer) return;
 
             // Update Current Plan (prefer subscription plan over customer plan)
-            const planValue = document.getElementById('planValue');
-            if (planValue) {
+            const planDisplay = document.getElementById('planDisplay');
+            if (planDisplay) {
                 const plan = (customer.subscription?.plan || customer.plan || 'Free');
-                planValue.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+                planDisplay.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
             }
 
             // Update Expiry Date (from subscription current_period_end)
-            const expiryValue = document.getElementById('expiryValue');
-            if (expiryValue) {
+            const expiryDisplay = document.getElementById('expiryDisplay');
+            if (expiryDisplay) {
                 if (customer.subscription?.current_period_end) {
                     const expiryDate = new Date(customer.subscription.current_period_end);
-                    expiryValue.textContent = expiryDate.toLocaleDateString('en-US', {
+                    expiryDisplay.textContent = expiryDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
                     });
                 } else {
-                    expiryValue.textContent = customer.plan === 'free' || !customer.plan
+                    expiryDisplay.textContent = customer.plan === 'free' || !customer.plan
                         ? 'N/A (Free Plan)'
                         : 'Not set';
                 }
             }
 
             // Update Linked Website
-            const websiteValue = document.getElementById('websiteValue');
-            if (websiteValue) {
+            const websiteDisplay = document.getElementById('websiteDisplay');
+            if (websiteDisplay) {
                 const website = customer.website_url || 'No website linked';
                 // Truncate long URLs for display
-                websiteValue.textContent = website.length > 30
+                websiteDisplay.textContent = website.length > 30
                     ? website.substring(0, 30) + '...'
                     : website;
-                websiteValue.title = website; // Show full URL on hover
+                websiteDisplay.title = website; // Show full URL on hover
             }
         }
 
@@ -1443,6 +1254,11 @@
                 console.error('Cancellation error:', error);
                 alert('An error occurred while cancelling your subscription. Please try again or contact support.');
             }
+        }
+
+        // Alias for new burger menu
+        function startCancellation() {
+            showCancelSubscription();
         }
 
         // Load dashboard on page load
