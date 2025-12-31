@@ -78,6 +78,31 @@ module.exports = async function handler(req, res) {
     // Store the customer_id for filtering scans (works for both token and customer_id auth)
     const actualCustomerId = customerObj.customer_id;
 
+    // Fetch subscription data from Subscriptions sheet
+    const subscriptionResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Subscriptions!A:J',
+    });
+
+    const subscriptionRows = subscriptionResponse.data.values || [];
+    const subscriptionData = subscriptionRows.slice(1);
+
+    // Find active subscription for this customer (match on customer_id, Column A, index 0)
+    const subscription = subscriptionData.find(row => row[0] === actualCustomerId);
+
+    const subscriptionObj = subscription ? {
+      customer_id: subscription[0],
+      payment_gateway_customer_id: subscription[1],
+      subscription_id: subscription[2],
+      plan: subscription[3],
+      status: subscription[4],
+      current_period_start: subscription[5],
+      current_period_end: subscription[6], // This is the expiry date!
+      mrr_amount: subscription[7],
+      created_date: subscription[8],
+      cancelled_date: subscription[9],
+    } : null;
+
     // Fetch scan history from Scan Summary sheet
     const scansResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -180,6 +205,7 @@ module.exports = async function handler(req, res) {
         website_url: customerObj.website_url,
         plan: customerObj.plan,
         status: customerObj.status,
+        subscription: subscriptionObj, // Include subscription data
       },
       scan_summary: latestScan ? {
         scan_id: latestScan[0], // Column A (index 0)

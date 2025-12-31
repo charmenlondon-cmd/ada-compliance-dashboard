@@ -1009,23 +1009,33 @@
         function updateAccountMenu(customer) {
             if (!customer) return;
 
-            // Update Current Plan
+            // Update Current Plan (prefer subscription plan over customer plan)
             const planValue = document.getElementById('planValue');
             if (planValue) {
-                const plan = customer.plan || 'Free';
+                const plan = (customer.subscription?.plan || customer.plan || 'Free');
                 planValue.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
             }
 
-            // Update Expiry Date
+            // Update Expiry Date (from subscription current_period_end)
             const expiryValue = document.getElementById('expiryValue');
             if (expiryValue) {
-                if (customer.expiry_date) {
-                    const expiryDate = new Date(customer.expiry_date);
+                if (customer.subscription?.current_period_end) {
+                    const expiryDate = new Date(customer.subscription.current_period_end);
                     expiryValue.textContent = expiryDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
                     });
+
+                    // Add visual indicator if subscription is expiring soon (within 7 days)
+                    const daysUntilExpiry = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
+                    if (daysUntilExpiry < 7 && daysUntilExpiry > 0) {
+                        expiryValue.style.color = '#fd7e14'; // Orange warning
+                        expiryValue.title = `Expires in ${daysUntilExpiry} days`;
+                    } else if (daysUntilExpiry <= 0) {
+                        expiryValue.style.color = '#dc3545'; // Red for expired
+                        expiryValue.title = 'Subscription expired';
+                    }
                 } else {
                     expiryValue.textContent = customer.plan === 'free' || !customer.plan
                         ? 'N/A (Free Plan)'
