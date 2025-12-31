@@ -193,6 +193,36 @@
             color: #007480;
         }
 
+        .submenu-item-info {
+            cursor: default;
+            background: #ffffff;
+            border-left: 3px solid #007480;
+            margin: 4px 8px;
+            border-radius: 4px;
+            line-height: 1.6;
+        }
+
+        .submenu-item-info:hover {
+            background: #ffffff;
+            color: #555;
+        }
+
+        .submenu-item-info strong {
+            color: #007480;
+            font-weight: 600;
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .submenu-item-info span {
+            color: #333;
+            font-weight: 400;
+            font-size: 0.9rem;
+        }
+
         .nav-divider {
             height: 1px;
             background: #e0e0e0;
@@ -619,17 +649,17 @@
                         My Account
                     </div>
                     <div class="submenu" id="myAccountSubmenu">
-                        <div class="submenu-item" onclick="alert('Current Plan feature coming soon')">
-                            Current Plan
+                        <div class="submenu-item submenu-item-info" id="currentPlan">
+                            <strong>Current Plan:</strong> <span id="planValue">Loading...</span>
                         </div>
-                        <div class="submenu-item" onclick="alert('Expiry Date feature coming soon')">
-                            Expiry Date
+                        <div class="submenu-item submenu-item-info" id="expiryDate">
+                            <strong>Expiry Date:</strong> <span id="expiryValue">Loading...</span>
+                        </div>
+                        <div class="submenu-item submenu-item-info" id="linkedWebsites">
+                            <strong>Linked Website:</strong> <span id="websiteValue">Loading...</span>
                         </div>
                         <div class="submenu-item" onclick="alert('Billing feature coming soon')">
                             Billing
-                        </div>
-                        <div class="submenu-item" onclick="alert('Linked Websites feature coming soon')">
-                            Linked Websites
                         </div>
                         <div class="submenu-item" onclick="alert('Change Password feature coming soon')">
                             Change Password
@@ -901,6 +931,9 @@
                     data.customer.company_name || 'Your Company';
             }
 
+            // Update account menu with customer data
+            updateAccountMenu(data.customer);
+
             // Update compliance score
             const score = data.score || 0;
             const scoreElement = document.getElementById('compliance-score');
@@ -971,6 +1004,45 @@
 
             // Update trend chart
             updateTrendChart(data.historical || []);
+        }
+
+        function updateAccountMenu(customer) {
+            if (!customer) return;
+
+            // Update Current Plan
+            const planValue = document.getElementById('planValue');
+            if (planValue) {
+                const plan = customer.plan || 'Free';
+                planValue.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+            }
+
+            // Update Expiry Date
+            const expiryValue = document.getElementById('expiryValue');
+            if (expiryValue) {
+                if (customer.expiry_date) {
+                    const expiryDate = new Date(customer.expiry_date);
+                    expiryValue.textContent = expiryDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } else {
+                    expiryValue.textContent = customer.plan === 'free' || !customer.plan
+                        ? 'N/A (Free Plan)'
+                        : 'Not set';
+                }
+            }
+
+            // Update Linked Website
+            const websiteValue = document.getElementById('websiteValue');
+            if (websiteValue) {
+                const website = customer.website_url || 'No website linked';
+                // Truncate long URLs for display
+                websiteValue.textContent = website.length > 30
+                    ? website.substring(0, 30) + '...'
+                    : website;
+                websiteValue.title = website; // Show full URL on hover
+            }
         }
 
         function updateRecommendations(violations) {
