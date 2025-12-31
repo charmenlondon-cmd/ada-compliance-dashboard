@@ -81,6 +81,14 @@
             padding: 10px;
             border-radius: 8px;
             transition: background 0.3s;
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .burger-icon:focus-visible {
+            outline: 2px solid #007480;
+            outline-offset: 2px;
         }
 
         .burger-icon:hover {
@@ -734,11 +742,11 @@
             </a>
 
             <div class="burger-menu">
-                <div class="burger-icon" id="burgerIcon">
+                <button class="burger-icon" id="burgerIcon" aria-label="Toggle navigation menu" aria-expanded="false">
                     <span class="burger-line"></span>
                     <span class="burger-line"></span>
                     <span class="burger-line"></span>
-                </div>
+                </button>
 
                 <div class="nav-dropdown" id="navDropdown">
                     <div class="nav-item" onclick="window.location.href='https://bisonblu.com'">
@@ -930,8 +938,10 @@
             if (burgerIcon) {
                 burgerIcon.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    this.classList.toggle('active');
+                    const isActive = this.classList.toggle('active');
                     navDropdown.classList.toggle('active');
+                    // Update aria-expanded for accessibility
+                    this.setAttribute('aria-expanded', isActive ? 'true' : 'false');
                 });
             }
 
