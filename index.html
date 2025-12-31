@@ -558,6 +558,108 @@
             transform: translateY(-1px);
         }
 
+        /* Cancellation Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            color: #002059;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .modal-content p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+
+        .modal-content .expiry-highlight {
+            color: #007480;
+            font-weight: 600;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }
+
+        .modal-btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #e2e2e2;
+        }
+
+        .modal-btn-proceed {
+            background: #007480;
+            color: white;
+        }
+
+        .modal-btn-proceed:hover {
+            background: #005a63;
+        }
+
+        .modal-btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-btn-danger:hover {
+            background: #c82333;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8rem;
@@ -664,7 +766,7 @@
                         <div class="submenu-item" onclick="alert('Change Password feature coming soon')">
                             Change Password
                         </div>
-                        <div class="submenu-item" onclick="alert('Cancel Subscription feature coming soon')">
+                        <div class="submenu-item" onclick="showCancelSubscription()">
                             Cancel Subscription
                         </div>
                         <div class="submenu-item" onclick="alert('Delete Account feature coming soon')">
@@ -756,6 +858,30 @@
     <button class="return-to-top" id="returnToTop" aria-label="Return to top">
         ↑
     </button>
+
+    <!-- Cancellation Modal -->
+    <div class="modal-overlay" id="cancelModal">
+        <div class="modal-content">
+            <h3>Cancel Subscription</h3>
+            <p id="cancelModalMessage"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeCancelModal()">Cancel</button>
+                <button class="modal-btn modal-btn-proceed" id="cancelProceedBtn">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content">
+            <h3>Final Confirmation</h3>
+            <p>Are you sure you want to cancel your current subscription and lose access to your website ADA compliance data?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeConfirmModal()">No - Cancel</button>
+                <button class="modal-btn modal-btn-danger" onclick="processCancellation()">Yes - Proceed</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let trendChart = null;
@@ -920,6 +1046,9 @@
         }
 
         function updateDashboard(data) {
+            // Store data globally for cancellation flow and rescan functionality
+            window.currentCustomerData = data;
+
             // Store customer_id globally for rescan functionality
             if (data.customer && data.customer.id) {
                 window.customerIdFromData = data.customer.id;
@@ -1205,11 +1334,90 @@
             }
         }
 
+        // Cancellation flow
+        let currentSubscriptionData = null;
+
+        function showCancelSubscription() {
+            // Get current customer data
+            const { token, customerId } = getAuthFromURL();
+
+            // Check if we have subscription data
+            if (!window.currentCustomerData?.customer?.subscription) {
+                alert('No active subscription found.');
+                return;
+            }
+
+            const subscription = window.currentCustomerData.customer.subscription;
+            currentSubscriptionData = subscription;
+
+            if (subscription.current_period_end) {
+                const expiryDate = new Date(subscription.current_period_end);
+                const formattedDate = expiryDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                const message = `Your current subscription will run until <span class="expiry-highlight">${formattedDate}</span>. Cancelling your subscription today will provide you with continued access to the service until this date. However, following this date, access to your account and data will be restricted.`;
+
+                document.getElementById('cancelModalMessage').innerHTML = message;
+            } else {
+                document.getElementById('cancelModalMessage').innerHTML = 'Cancelling your subscription will restrict access to your account and data.';
+            }
+
+            // Show first modal
+            document.getElementById('cancelModal').classList.add('active');
+
+            // Set up proceed button to show confirmation
+            document.getElementById('cancelProceedBtn').onclick = function() {
+                closeCancelModal();
+                setTimeout(() => {
+                    document.getElementById('confirmModal').classList.add('active');
+                }, 300);
+            };
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.remove('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        async function processCancellation() {
+            // Close modal
+            closeConfirmModal();
+
+            // TODO: Call cancellation API endpoint
+            // For now, show success message
+            alert('Cancellation request received. Your subscription will be cancelled at the end of the current billing period.');
+
+            // In the future, this should call an API endpoint like:
+            // const response = await fetch('/api/cancel-subscription', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({
+            //         customer_id: window.currentCustomerData.customer.id,
+            //         subscription_id: currentSubscriptionData.subscription_id
+            //     })
+            // });
+
+            // Reload dashboard to show updated status
+            // setTimeout(() => loadDashboard(), 1000);
+        }
+
+        // Close modals when clicking overlay
+        document.getElementById('cancelModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCancelModal();
+        });
+
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeConfirmModal();
+        });
+
         // Load dashboard on page load
         document.addEventListener('DOMContentLoaded', loadDashboard);
 
         // Auto-refresh every 5 minutes
         setInterval(loadDashboard, 300000);
-    </script>
-</body>
-</html>
