@@ -22,9 +22,16 @@
         .top-nav {
             background: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .top-nav.hidden {
+            transform: translateY(-100%);
         }
 
         .nav-container {
@@ -192,6 +199,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 30px 20px;
+            padding-top: 170px; /* Account for fixed header */
         }
 
         .header {
@@ -477,6 +485,44 @@
             text-decoration: underline;
         }
 
+        /* Return to Top Button */
+        .return-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #007480;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 116, 128, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .return-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .return-to-top:hover {
+            background: #005a63;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 116, 128, 0.4);
+        }
+
+        .return-to-top:active {
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8rem;
@@ -488,6 +534,10 @@
 
             .score-value {
                 font-size: 3rem;
+            }
+
+            .container {
+                padding-top: 120px; /* Adjust for smaller mobile header */
             }
 
             .nav-container {
@@ -525,6 +575,14 @@
 
             .nav-dropdown {
                 top: 60px;
+            }
+
+            .return-to-top {
+                width: 50px;
+                height: 50px;
+                bottom: 20px;
+                right: 20px;
+                font-size: 20px;
             }
         }
     </style>
@@ -659,8 +717,46 @@
         </div>
     </div>
 
+    <!-- Return to Top Button -->
+    <button class="return-to-top" id="returnToTop" aria-label="Return to top">
+        ↑
+    </button>
+
     <script>
         let trendChart = null;
+        let lastScrollTop = 0;
+        const nav = document.querySelector('.top-nav');
+        const returnToTopBtn = document.getElementById('returnToTop');
+
+        // Handle scroll for navbar hide/show and return to top button
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Hide/show navbar on scroll
+            if (scrollTop > lastScrollTop && scrollTop > 150) {
+                // Scrolling down - hide navbar
+                nav.classList.add('hidden');
+            } else {
+                // Scrolling up - show navbar
+                nav.classList.remove('hidden');
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+
+            // Show/hide return to top button
+            if (scrollTop > 300) {
+                returnToTopBtn.classList.add('visible');
+            } else {
+                returnToTopBtn.classList.remove('visible');
+            }
+        });
+
+        // Return to top button click handler
+        returnToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
 
         // Burger menu toggle
         document.getElementById('burgerIcon').addEventListener('click', function(e) {
