@@ -197,18 +197,20 @@
         .header {
             text-align: center;
             color: #002059;
-            margin-bottom: 30px;
+            margin-bottom: 50px;
+            padding: 40px 20px;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 5rem;
+            margin-bottom: 20px;
             font-weight: 700;
+            line-height: 1.2;
         }
 
         .header p {
             color: #606887;
-            font-size: 1.1rem;
+            font-size: 1.5rem;
         }
 
         .dashboard-grid {
@@ -434,9 +436,56 @@
             font-size: 1.2rem;
         }
 
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-item {
+            padding: 14px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007480;
+            transition: background 0.2s;
+        }
+
+        .recommendation-item:hover {
+            background: #e9ecef;
+        }
+
+        .recommendation-item h4 {
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .recommendation-item p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .recommendation-item a {
+            color: #007480;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .recommendation-item a:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 1.8rem;
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1.1rem;
             }
 
             .score-value {
@@ -559,20 +608,29 @@
                 </div>
             </div>
 
-            <!-- Trend Chart -->
-            <div class="card chart-container">
-                <h2>Compliance Trend</h2>
-                <div class="chart-wrapper">
-                    <canvas id="trend-chart"></canvas>
-                </div>
-            </div>
-
-            <!-- Violations -->
+            <!-- Violations (moved up) -->
             <div class="card violations-section">
                 <h2>Recent Violations</h2>
                 <div class="violation-counts" id="violation-counts"></div>
                 <div class="violations-grid" id="violations-grid">
                     <div class="loading">Loading violations...</div>
+                </div>
+            </div>
+
+            <!-- Recommendations (NEW) -->
+            <div class="card violations-section">
+                <h2>Recommendations</h2>
+                <p style="color: #666; margin-bottom: 16px; font-size: 0.95rem;">Prioritized fixes based on WCAG 2.1 guidelines</p>
+                <ul class="recommendations-list" id="recommendations-list">
+                    <li class="loading">Loading recommendations...</li>
+                </ul>
+            </div>
+
+            <!-- Trend Chart (moved down) -->
+            <div class="card chart-container">
+                <h2>Compliance Trend</h2>
+                <div class="chart-wrapper">
+                    <canvas id="trend-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -784,8 +842,53 @@
                 violationsGrid.innerHTML = '<div class="no-violations">🎉 No violations found! Great job!</div>';
             }
 
+            // Update recommendations
+            updateRecommendations(data.violations || []);
+
             // Update trend chart
             updateTrendChart(data.historical || []);
+        }
+
+        function updateRecommendations(violations) {
+            const recommendationsList = document.getElementById('recommendations-list');
+
+            if (violations.length === 0) {
+                recommendationsList.innerHTML = '<li class="no-violations">🎉 No recommendations needed - your site is fully compliant!</li>';
+                return;
+            }
+
+            // Group violations by impact and get unique recommendations
+            const impactOrder = { 'critical': 1, 'serious': 2, 'moderate': 3, 'minor': 4 };
+            const uniqueRecommendations = new Map();
+
+            violations.forEach(v => {
+                if (!uniqueRecommendations.has(v.rule_id)) {
+                    uniqueRecommendations.set(v.rule_id, {
+                        rule_id: v.rule_id,
+                        description: v.description,
+                        impact: v.impact,
+                        help_url: v.help_url,
+                        count: 1
+                    });
+                } else {
+                    uniqueRecommendations.get(v.rule_id).count++;
+                }
+            });
+
+            // Sort by impact priority
+            const sortedRecommendations = Array.from(uniqueRecommendations.values())
+                .sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact])
+                .slice(0, 10); // Show top 10 recommendations
+
+            recommendationsList.innerHTML = sortedRecommendations.map(rec => `
+                <li class="recommendation-item">
+                    <h4>${formatRuleId(rec.rule_id)}
+                        <span style="color: #888; font-weight: normal; font-size: 0.85rem;">(${rec.count} occurrence${rec.count > 1 ? 's' : ''})</span>
+                    </h4>
+                    <p>${rec.description}</p>
+                    ${rec.help_url ? `<a href="${rec.help_url}" target="_blank">View WCAG Guidelines →</a>` : ''}
+                </li>
+            `).join('');
         }
 
         function formatRuleId(ruleId) {
