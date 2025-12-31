@@ -820,9 +820,9 @@
 
             } catch (error) {
                 console.error('Session validation error:', error);
-                // Redirect to login page with error message
-                window.location.href = 'https://bisonblu.com/ada-login?error=session_expired';
-                return false;
+                // Don't redirect - just show error and continue
+                alert('Session validation failed: ' + error.message + '\n\nWill try to load dashboard anyway.');
+                return true; // Continue to load dashboard
             }
         }
 
