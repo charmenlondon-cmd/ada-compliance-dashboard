@@ -1389,22 +1389,41 @@
             // Close modal
             closeConfirmModal();
 
-            // TODO: Call cancellation API endpoint
-            // For now, show success message
-            alert('Cancellation request received. Your subscription will be cancelled at the end of the current billing period.');
+            try {
+                // Call cancellation API endpoint
+                const response = await fetch('/api/cancel-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_id: window.currentCustomerData.customer.id,
+                        subscription_id: currentSubscriptionData.subscription_id,
+                        current_period_end: currentSubscriptionData.current_period_end
+                    })
+                });
 
-            // In the future, this should call an API endpoint like:
-            // const response = await fetch('/api/cancel-subscription', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({
-            //         customer_id: window.currentCustomerData.customer.id,
-            //         subscription_id: currentSubscriptionData.subscription_id
-            //     })
-            // });
+                const result = await response.json();
 
-            // Reload dashboard to show updated status
-            // setTimeout(() => loadDashboard(), 1000);
+                if (response.ok && result.success) {
+                    // Format the cancellation date for display
+                    const cancelDate = new Date(result.cancellation_date);
+                    const formattedDate = cancelDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    alert(`Your subscription has been cancelled. Access to your account will end on ${formattedDate}.`);
+
+                    // Reload dashboard to show updated status
+                    setTimeout(() => loadDashboard(), 1000);
+                } else {
+                    throw new Error(result.error || 'Failed to cancel subscription');
+                }
+
+            } catch (error) {
+                console.error('Cancellation error:', error);
+                alert('An error occurred while cancelling your subscription. Please try again or contact support.');
+            }
         }
 
         // Close modals when clicking overlay
