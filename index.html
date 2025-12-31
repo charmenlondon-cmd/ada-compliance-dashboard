@@ -13,8 +13,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #a8c5f0 0%, #c7d9f5 100%);
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fa;
             min-height: 100vh;
         }
 
@@ -80,7 +80,7 @@
         .burger-line {
             width: 25px;
             height: 3px;
-            background: #4a7bd9;
+            background: #007480;
             border-radius: 2px;
             transition: all 0.3s;
         }
@@ -138,7 +138,7 @@
 
         .nav-item:hover {
             background: #f8f9fa;
-            color: #4a7bd9;
+            color: #007480;
         }
 
         .nav-item.has-submenu {
@@ -178,7 +178,7 @@
 
         .submenu-item:hover {
             background: #e9ecef;
-            color: #4a7bd9;
+            color: #007480;
         }
 
         .nav-divider {
@@ -196,18 +196,19 @@
 
         .header {
             text-align: center;
-            color: #2c5aa0;
+            color: #002059;
             margin-bottom: 30px;
         }
 
         .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
+            font-weight: 700;
         }
 
         .header p {
-            opacity: 0.8;
-            color: #4a7bd9;
+            color: #606887;
+            font-size: 1.1rem;
         }
 
         .dashboard-grid {
@@ -221,7 +222,8 @@
             background: white;
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
         }
 
         .card h2 {
@@ -239,7 +241,7 @@
         .score-value {
             font-size: 4rem;
             font-weight: 700;
-            color: #4a7bd9;
+            color: #007480;
         }
 
         .score-label {
@@ -258,7 +260,8 @@
         }
 
         .customer-info strong {
-            color: #4a7bd9;
+            color: #007480;
+            font-weight: 700;
         }
 
         .action-buttons {
@@ -270,26 +273,36 @@
         .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: background 0.4s ease, color 0.4s ease, transform 0.2s;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .btn-primary {
-            background: #4a7bd9;
+            background: #007480;
             color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 2px 8px rgba(0, 116, 128, 0.3);
         }
 
         .btn-secondary {
             background: #f0f0f0;
             color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e2e2;
         }
 
         .violations-section {
@@ -350,7 +363,7 @@
         }
 
         .violation-card a {
-            color: #4a7bd9;
+            color: #007480;
             text-decoration: none;
             font-size: 0.85rem;
         }
@@ -810,12 +823,12 @@
                     datasets: [{
                         label: 'Compliance Score',
                         data: historical.map(h => h.score),
-                        borderColor: '#4a7bd9',
-                        backgroundColor: 'rgba(74, 123, 217, 0.1)',
+                        borderColor: '#007480',
+                        backgroundColor: 'rgba(0, 116, 128, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#4a7bd9',
+                        pointBackgroundColor: '#007480',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
                         pointRadius: 5
