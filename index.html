@@ -946,7 +946,13 @@
             // Update violations grid
             const violationsGrid = document.getElementById('violations-grid');
             if (data.violations && data.violations.length > 0) {
-                violationsGrid.innerHTML = data.violations.map(v => `
+                // Sort by severity: critical → serious → moderate → minor
+                const impactOrder = { 'critical': 1, 'serious': 2, 'moderate': 3, 'minor': 4 };
+                const sortedViolations = [...data.violations].sort((a, b) =>
+                    (impactOrder[a.impact] || 5) - (impactOrder[b.impact] || 5)
+                );
+
+                violationsGrid.innerHTML = sortedViolations.map(v => `
                     <div class="violation-card ${v.impact}">
                         <h4>${formatRuleId(v.rule_id)}</h4>
                         <p>${v.description}</p>
@@ -1006,6 +1012,21 @@
 
         function updateRecommendations(violations) {
             const recommendationsList = document.getElementById('recommendations-list');
+
+            // Check if user is on free plan - show paywall
+            const userPlan = window.currentCustomerData?.customer?.plan || 'free';
+            if (userPlan === 'free' && violations.length > 0) {
+                recommendationsList.innerHTML = `
+                    <li style="position: relative; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px;">
+                        <div style="position: absolute; inset: 0; backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
+                            <h3 style="color: #007480; margin-bottom: 16px;">🔒 Unlock Recommendations</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Upgrade to see personalized fix recommendations</p>
+                            <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
+                        </div>
+                        <p style="filter: blur(4px);">Sample recommendation text that appears blurred...</p>
+                    </li>`;
+                return;
+            }
 
             if (violations.length === 0) {
                 recommendationsList.innerHTML = '<li class="no-violations">🎉 No recommendations needed - your site is fully compliant!</li>';
