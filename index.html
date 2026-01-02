@@ -150,17 +150,19 @@
             flex-wrap: wrap;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background 0.4s ease, color 0.4s ease, transform 0.2s;
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-        }
-
+                    .btn {
+                        padding: 12px 24px;
+                        border: none;
+                        border-radius: 20px;
+                        cursor: pointer;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        transition: background 0.4s ease, color 0.4s ease, transform 0.2s;
+                        font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                        min-width: 200px;
+                        flex-grow: 1;
+                        text-align: center;
+                    }
         .btn:hover {
             transform: translateY(-2px);
         }
@@ -810,7 +812,7 @@
                     <button class="btn btn-primary" onclick="handleScanButtonClick()" id="scan-btn">
                         Request New Scan
                     </button>
-                    <button class="btn btn-secondary" onclick="showScannedPagesModal()">
+                    <button class="btn btn-primary" onclick="showScannedPagesModal()">
                         View Scanned Pages
                     </button>
                 </div>
