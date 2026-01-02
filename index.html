@@ -1201,12 +1201,15 @@
             const userPlan = window.currentCustomerData?.customer?.plan || 'free';
             if (userPlan === 'free' && violations.length > 0) {
                 recommendationsList.innerHTML = `
-                    <li style="position: relative; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px;">
-                        <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
-                            <h3 style="color: #007480; margin-bottom: 16px;">Unlock Recommendations</h3>
-                            <p style="color: #666; margin-bottom: 20px;">Upgrade to see personalized fix recommendations</p>
-                            <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
-                        </div>
+                    <li style="position: relative; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px; min-height: 320px;">
+
+                        <h3 style="color: #007480; margin-bottom: 16px; position: relative; top: 10px; z-index: 2;">Unlock Recommendations</h3>
+
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80px; background: rgba(255, 255, 255, 0.7); border-radius: 8px; z-index: 1;"></div>
+
+                        <p style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; color: #666; width: 100%; text-align: center;">Upgrade to see personalized fix recommendations</p>
+
+                        <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 2;">Upgrade Now</button>
                     </li>`;
                 return;
             }
