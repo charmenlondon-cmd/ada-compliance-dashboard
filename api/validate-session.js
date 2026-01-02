@@ -82,7 +82,7 @@ module.exports = async function handler(req, res) {
     // Lookup customer by customer_id from JWT
     const customerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Customers!A:L',
+      range: 'Customers!A:N',
     });
 
     const rows = customerResponse.data.values || [];
@@ -95,8 +95,8 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ error: 'Customer not found', valid: false });
     }
 
-    // Check if session_token in sheet (column L, index 11) matches the JWT
-    const storedToken = customer[11];
+    // Check if session_token in sheet (column N, index 13) matches the JWT
+    const storedToken = customer[13];
     if (storedToken !== session) {
       return res.status(401).json({ error: 'Session has been revoked', valid: false });
     }
