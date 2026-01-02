@@ -622,6 +622,51 @@
                 opacity: 1;
             }
         }
+
+        /* Scanned Pages Modal Styles */
+        .scanned-pages-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .page-item {
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            transition: background 0.2s ease;
+            word-break: break-all;
+        }
+
+        .page-item:hover {
+            background: #f0f0f0;
+        }
+
+        .page-item a {
+            color: #007480;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .page-item a:hover {
+            text-decoration: underline;
+        }
+
+        .pages-count {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .no-pages-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -645,6 +690,24 @@
         </div>
     </div>
 
+    <!-- Scanned Pages Modal -->
+    <div id="scannedPagesModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeScannedPagesModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Scanned Pages</h2>
+            </div>
+            <div class="modal-body">
+                <p class="pages-count" id="pages-count"></p>
+                <div class="scanned-pages-list" id="scanned-pages-list">
+                    <!-- Page URLs will be populated here by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="closeScannedPagesModal()">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Top Navigation -->
     <nav class="top-nav">
@@ -747,8 +810,8 @@
                     <button class="btn btn-primary" onclick="handleScanButtonClick()" id="scan-btn">
                         Request New Scan
                     </button>
-                    <button class="btn btn-secondary" onclick="loadDashboard()">
-                        Refresh Data
+                    <button class="btn btn-secondary" onclick="showScannedPagesModal()">
+                        View Scanned Pages
                     </button>
                 </div>
             </div>
@@ -1332,6 +1395,45 @@
             // TODO: Redirect to signup page or show signup form
             alert('Signup functionality coming soon!');
             closeLoginModal();
+        }
+
+        // Show scanned pages modal
+        function showScannedPagesModal() {
+            const modal = document.getElementById('scannedPagesModal');
+            const pagesList = document.getElementById('scanned-pages-list');
+            const pagesCount = document.getElementById('pages-count');
+
+            // Get scanned pages from current customer data
+            const scannedPages = window.currentCustomerData?.scan_summary?.scanned_page_urls;
+
+            // Clear previous content
+            pagesList.innerHTML = '';
+
+            if (scannedPages && scannedPages.length > 0) {
+                // Show page count
+                pagesCount.textContent = `${scannedPages.length} page${scannedPages.length !== 1 ? 's' : ''} scanned`;
+
+                // Create list items for each page
+                scannedPages.forEach((pageUrl, index) => {
+                    const pageItem = document.createElement('div');
+                    pageItem.className = 'page-item';
+                    pageItem.innerHTML = `<a href="${pageUrl}" target="_blank" rel="noopener noreferrer">${pageUrl}</a>`;
+                    pagesList.appendChild(pageItem);
+                });
+            } else {
+                // Show no pages message
+                pagesCount.textContent = '';
+                pagesList.innerHTML = '<div class="no-pages-message">No scanned pages available yet. Request a new scan to see results.</div>';
+            }
+
+            // Show the modal
+            modal.classList.add('show');
+        }
+
+        // Close scanned pages modal
+        function closeScannedPagesModal() {
+            const modal = document.getElementById('scannedPagesModal');
+            modal.classList.remove('show');
         }
 
         // Update scan button visibility based on plan
