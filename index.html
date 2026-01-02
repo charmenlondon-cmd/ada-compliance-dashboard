@@ -630,15 +630,17 @@
         <div class="modal-content">
             <button class="modal-close" onclick="closeLoginModal()">&times;</button>
             <div class="modal-header">
-                <h2>Upgrade Required</h2>
+                <h2>New Scan</h2>
             </div>
             <div class="modal-body">
-                <p>Login to your account to initiate a new scan.</p>
+                <p>Please login to continue.</p>
             </div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="handleLogin()">Login</button>
-                <button class="btn btn-primary" onclick="handleSignup()">Sign Up</button>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+                Don't yet have an account? <a href="#" onclick="handleSignup(); return false;" style="color: #007480; text-decoration: none; font-weight: 600;">Sign Up</a>
             </div>
         </div>
     </div>
