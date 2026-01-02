@@ -952,12 +952,17 @@
                     (impactOrder[a.impact] || 5) - (impactOrder[b.impact] || 5)
                 );
 
+                // Check user plan for paywall
+                const userPlan = window.currentCustomerData?.customer?.plan || 'free';
+                const showFixLinks = userPlan !== 'free';
+
                 violationsGrid.innerHTML = sortedViolations.map(v => `
                     <div class="violation-card ${v.impact}">
                         <h4>${formatRuleId(v.rule_id)}</h4>
                         <p>${v.description}</p>
                         <small>Impact: ${v.impact} | Page: ${v.page_url || 'Homepage'}</small>
-                        ${v.help_url ? `<a href="${v.help_url}" target="_blank">Learn how to fix →</a>` : ''}
+                        ${showFixLinks && v.help_url ? `<a href="${v.help_url}" target="_blank">Learn how to fix →</a>` : ''}
+                        ${!showFixLinks ? `<a href="#" onclick="alert('Upgrade to see fix recommendations'); return false;" style="color: #999;">🔒 Upgrade to see fix</a>` : ''}
                     </div>
                 `).join('');
             } else {
