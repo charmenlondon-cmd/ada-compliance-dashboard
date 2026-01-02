@@ -1201,13 +1201,20 @@
             const userPlan = window.currentCustomerData?.customer?.plan || 'free';
             if (userPlan === 'free' && violations.length > 0) {
                 recommendationsList.innerHTML = `
-                    <li style="position: relative; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px;">
-                        <div style="position: absolute; inset: 0; backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
-                            <h3 style="color: #007480; margin-bottom: 16px;">🔒 Unlock Recommendations</h3>
-                            <p style="color: #666; margin-bottom: 20px;">Upgrade to see personalized fix recommendations</p>
-                            <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
+                    <li style="position: relative; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-around; align-items: center;">
+
+                        <h3 style="color: #007480;">🔒 Unlock Recommendations</h3>
+
+                        <div style="position: relative; width: 100%;">
+                            <p style="filter: blur(3px); color: #ccc; margin: 0 20px;">
+                                To fix the color contrast issue, change the text color from #888888 to #000000. This will ensure a contrast ratio of at least 4.5:1, meeting WCAG AA requirements. Another issue is missing alt text...
+                            </p>
+                            <p style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; color: #666; width: 100%; text-align: center;">
+                                Upgrade to see personalized fix recommendations
+                            </p>
                         </div>
-                        <p style="filter: blur(4px);">Sample recommendation text that appears blurred...</p>
+
+                        <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
                     </li>`;
                 return;
             }
