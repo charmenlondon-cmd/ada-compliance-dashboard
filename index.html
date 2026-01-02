@@ -535,9 +535,115 @@
                 font-size: 20px;
             }
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-header h2 {
+            color: #007480;
+            margin-bottom: 10px;
+        }
+
+        .modal-body {
+            margin: 20px 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .modal-buttons .btn {
+            min-width: 100px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Login/Signup Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Upgrade Required</h2>
+            </div>
+            <div class="modal-body">
+                <p>Login to your account to initiate a new scan.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+                <button class="btn btn-primary" onclick="handleSignup()">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Top Navigation -->
     <nav class="top-nav">
         <div class="nav-container">
@@ -636,7 +742,7 @@
             <div class="card">
                 <h2>Actions</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="requestRescan()" id="scan-btn">
+                    <button class="btn btn-primary" onclick="handleScanButtonClick()" id="scan-btn">
                         Request New Scan
                     </button>
                     <button class="btn btn-secondary" onclick="loadDashboard()">
@@ -968,6 +1074,9 @@
 
             // Update trend chart
             updateTrendChart(data.historical || []);
+
+            // Update scan button visibility based on plan
+            updateScanButtonVisibility();
         }
 
         function updateAccountMenu(customer) {
@@ -1181,6 +1290,59 @@
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Request New Scan';
+            }
+        }
+
+        // Handle scan button click based on user plan
+        function handleScanButtonClick() {
+            const userPlan = window.currentCustomerData?.customer?.plan || 'free';
+
+            // Free and guest users see the upgrade modal
+            if (userPlan === 'free' || userPlan === 'guest') {
+                showLoginModal();
+            } else {
+                // Paid users can request scan directly
+                requestRescan();
+            }
+        }
+
+        // Show login/signup modal
+        function showLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.add('show');
+        }
+
+        // Close login/signup modal
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.remove('show');
+        }
+
+        // Handle login button click
+        function handleLogin() {
+            // TODO: Redirect to login page or show login form
+            alert('Login functionality coming soon!');
+            closeLoginModal();
+        }
+
+        // Handle signup button click
+        function handleSignup() {
+            // TODO: Redirect to signup page or show signup form
+            alert('Signup functionality coming soon!');
+            closeLoginModal();
+        }
+
+        // Update scan button visibility based on plan
+        function updateScanButtonVisibility() {
+            const userPlan = window.currentCustomerData?.customer?.plan || 'free';
+            const scanBtn = document.getElementById('scan-btn');
+
+            // Show button for free/guest (to encourage upgrades)
+            // Hide for essentials/professional (they have other scan methods)
+            if (userPlan === 'essentials' || userPlan === 'professional') {
+                scanBtn.style.display = 'none';
+            } else {
+                scanBtn.style.display = 'inline-block';
             }
         }
 
