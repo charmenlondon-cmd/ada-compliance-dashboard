@@ -44,8 +44,27 @@ module.exports = async function handler(req, res) {
 
     // Check expiration
     const now = Math.floor(Date.now() / 1000);
+    const nowISO = new Date().toISOString();
+
+    // DEBUG: Log timestamps for troubleshooting
+    console.log('Token validation timestamps:', {
+      vercel_current_time: nowISO,
+      vercel_unix: now,
+      token_issued_at: decoded.iat,
+      token_expires_at: decoded.exp,
+      is_expired: decoded.exp < now
+    });
+
     if (decoded.exp && decoded.exp < now) {
-      return res.status(401).json({ error: 'Token expired', valid: false });
+      return res.status(401).json({
+        error: 'Token expired',
+        valid: false,
+        debug: {
+          vercel_time: nowISO,
+          token_exp: decoded.exp,
+          current_unix: now
+        }
+      });
     }
 
     // Initialize Google Sheets API
