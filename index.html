@@ -836,10 +836,9 @@
                 </div>
             </div>
 
-            <!-- Recommendations (NEW) -->
+            <!-- Recommendations -->
             <div class="card violations-section">
                 <h2>Recommendations</h2>
-                <p style="color: #666; margin-bottom: 16px; font-size: 0.95rem;">Prioritized fixes based on WCAG 2.1 guidelines</p>
                 <ul class="recommendations-list" id="recommendations-list">
                     <li class="loading">Loading recommendations...</li>
                 </ul>
@@ -1201,20 +1200,33 @@
             const userPlan = window.currentCustomerData?.customer?.plan || 'free';
             if (userPlan === 'free' && violations.length > 0) {
                 recommendationsList.innerHTML = `
-                    <li style="position: relative; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-around; align-items: center;">
+                    <li style="position: relative; padding: 50px 40px; text-align: center; background: white; border-radius: 8px; overflow: hidden; list-style: none;">
 
-                        <h3 style="color: #007480;">🔒 Unlock Recommendations</h3>
+                        <h3 style="color: #007480; font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Unlock Recommendations</h3>
 
-                        <div style="position: relative; width: 100%;">
-                            <p style="filter: blur(3px); color: #ccc; margin: 0 20px;">
-                                To fix the color contrast issue, change the text color from #888888 to #000000. This will ensure a contrast ratio of at least 4.5:1, meeting WCAG AA requirements. Another issue is missing alt text...
-                            </p>
-                            <p style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; color: #666; width: 100%; text-align: center;">
-                                Upgrade to see personalized fix recommendations
-                            </p>
-                        </div>
+                        <p style="color: #333; font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                            Upgrade to access personalized recommendations for any violations identified in your most recent scan.
+                        </p>
+
+                        <p style="color: #333; font-size: 0.95rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                            Recommendations are sourced directly from the international Web Content Accessibility Guidelines (WCAG).
+                        </p>
 
                         <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
+
+                        <!-- Blurred background suggesting hidden content -->
+                        <div style="position: absolute; bottom: -20px; left: 0; right: 0; height: 180px; overflow: hidden; opacity: 0.15; pointer-events: none; z-index: 0;">
+                            <div style="filter: blur(8px); background: linear-gradient(to bottom, transparent, #f8f9fa); padding: 20px;">
+                                <div style="background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #007480;">
+                                    <div style="font-size: 0.85rem; color: #333; margin-bottom: 4px;">Color Contrast Issues</div>
+                                    <div style="font-size: 0.75rem; color: #666;">Ensure text meets WCAG contrast ratios...</div>
+                                </div>
+                                <div style="background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #007480;">
+                                    <div style="font-size: 0.85rem; color: #333; margin-bottom: 4px;">Missing Alt Text</div>
+                                    <div style="font-size: 0.75rem; color: #666;">Add descriptive alternative text to images...</div>
+                                </div>
+                            </div>
+                        </div>
                     </li>`;
                 return;
             }
