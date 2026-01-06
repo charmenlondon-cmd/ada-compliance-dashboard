@@ -1200,32 +1200,39 @@
             const userPlan = window.currentCustomerData?.customer?.plan || 'free';
             if (userPlan === 'free' && violations.length > 0) {
                 recommendationsList.innerHTML = `
-                    <li style="position: relative; padding: 50px 40px; text-align: center; background: white; border-radius: 8px; overflow: hidden; list-style: none;">
-
-                        <h3 style="color: #007480; font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Unlock Recommendations</h3>
-
-                        <p style="color: #333; font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                            Upgrade to access personalized recommendations for any violations identified in your most recent scan.
-                        </p>
-
-                        <p style="color: #333; font-size: 0.95rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                            Recommendations are sourced directly from the international Web Content Accessibility Guidelines (WCAG).
-                        </p>
-
-                        <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
+                    <li style="position: relative; padding: 50px 40px 60px 40px; text-align: center; background: white; border-radius: 8px; overflow: hidden; list-style: none; min-height: 400px;">
 
                         <!-- Blurred background suggesting hidden content -->
-                        <div style="position: absolute; bottom: -20px; left: 0; right: 0; height: 180px; overflow: hidden; opacity: 0.15; pointer-events: none; z-index: 0;">
-                            <div style="filter: blur(8px); background: linear-gradient(to bottom, transparent, #f8f9fa); padding: 20px;">
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 20px; pointer-events: none; z-index: 1; opacity: 0.25;">
+                            <div style="filter: blur(5px); margin-top: 200px;">
                                 <div style="background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #007480;">
-                                    <div style="font-size: 0.85rem; color: #333; margin-bottom: 4px;">Color Contrast Issues</div>
-                                    <div style="font-size: 0.75rem; color: #666;">Ensure text meets WCAG contrast ratios...</div>
+                                    <div style="font-size: 0.9rem; color: #333; margin-bottom: 6px; font-weight: 600;">Fix Color Contrast Issues</div>
+                                    <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">Ensure text meets WCAG AA contrast ratios of at least 4.5:1 for normal text and 3:1 for large text...</div>
                                 </div>
                                 <div style="background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #007480;">
-                                    <div style="font-size: 0.85rem; color: #333; margin-bottom: 4px;">Missing Alt Text</div>
-                                    <div style="font-size: 0.75rem; color: #666;">Add descriptive alternative text to images...</div>
+                                    <div style="font-size: 0.9rem; color: #333; margin-bottom: 6px; font-weight: 600;">Add Missing Alt Text</div>
+                                    <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">Provide descriptive alternative text for all images to ensure screen reader accessibility...</div>
+                                </div>
+                                <div style="background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #007480;">
+                                    <div style="font-size: 0.9rem; color: #333; margin-bottom: 6px; font-weight: 600;">Improve Heading Structure</div>
+                                    <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">Maintain proper heading hierarchy without skipping levels for better navigation...</div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Foreground content -->
+                        <div style="position: relative; z-index: 2;">
+                            <h3 style="color: #007480; font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Unlock Recommendations</h3>
+
+                            <p style="color: #333; font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                                Upgrade to access personalized recommendations for any violations identified in your most recent scan.
+                            </p>
+
+                            <p style="color: #333; font-size: 0.95rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                                Recommendations are sourced directly from the international Web Content Accessibility Guidelines (WCAG).
+                            </p>
+
+                            <button class="btn btn-primary" onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
                         </div>
                     </li>`;
                 return;

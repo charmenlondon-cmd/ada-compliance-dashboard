@@ -103,10 +103,10 @@ module.exports = async function handler(req, res) {
       cancelled_date: subscription[9],
     } : null;
 
-    // Fetch scan history from Scan Summary sheet
+    // Fetch scan history from Scan Summary sheet (now including Column Y for scanned URLs)
     const scansResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Scan Summary!A:M',
+      range: 'Scan Summary!A:Y',
     });
 
     const scanRows = scansResponse.data.values || [];
@@ -184,6 +184,11 @@ module.exports = async function handler(req, res) {
       score: parseInt(scan[4]) || 0, // compliance_score (Column E, index 4)
     }));
 
+    // Parse scanned page URLs from Column Y (index 24) of the latest scan
+    const scannedPageUrls = (latestScan && latestScan[24])
+      ? latestScan[24].split(',').map(url => url.trim()).filter(Boolean)
+      : [];
+
     // Build response matching dashboard expectations
     const response = {
       score: latestScan ? parseInt(latestScan[4]) || 0 : 0, // Column E (index 4)
@@ -217,6 +222,7 @@ module.exports = async function handler(req, res) {
         minor_count: parseInt(latestScan[9]) || 0, // Column J (index 9)
         scan_duration: latestScan[11], // Column L (index 11)
         status: latestScan[12], // Column M (index 12)
+        scanned_page_urls: scannedPageUrls, // Added scanned URLs from Column Y
       } : null,
     };
 
