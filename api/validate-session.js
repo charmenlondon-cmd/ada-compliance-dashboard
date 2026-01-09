@@ -1,20 +1,42 @@
 // Vercel Serverless Function: /api/validate-session
-// Validates JWT session tokens directly (no n8n dependency)
+// Validates JWT session tokens with signature verification
 
 const { google } = require('googleapis');
+const crypto = require('crypto');
 
-// Simple JWT decoder (no verification, just decode)
-function decodeJWT(token) {
+// JWT decoder with signature verification
+function verifyAndDecodeJWT(token, secret) {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) {
       throw new Error('Invalid JWT format');
     }
 
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-    return payload;
+    const [headerB64, payloadB64, signatureB64] = parts;
+
+    // Verify signature
+    const signatureInput = headerB64 + '.' + payloadB64;
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(signatureInput)
+      .digest('base64')
+      .replace(/=+$/, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+
+    if (signatureB64 !== expectedSignature) {
+      throw new Error('Invalid JWT signature');
+    }
+
+    // Decode payload
+    const payloadJson = Buffer.from(
+      payloadB64.replace(/-/g, '+').replace(/_/g, '/'),
+      'base64'
+    ).toString('utf8');
+
+    return JSON.parse(payloadJson);
   } catch (error) {
-    throw new Error('Failed to decode JWT: ' + error.message);
+    throw new Error('Failed to verify JWT: ' + error.message);
   }
 }
 
@@ -39,8 +61,39 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Session token required', valid: false });
     }
 
-    // Decode JWT (without verification for now - will check against stored token)
-    const decoded = decodeJWT(session);
+    // Initialize Google Sheets API
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
+
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+    // Get JWT_SECRET from Config sheet
+    const configResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Config!A:B',
+    });
+
+    const configRows = configResponse.data.values || [];
+    const jwtSecretRow = configRows.find(row => row[0] === 'jwt_secret');
+
+    if (!jwtSecretRow || !jwtSecretRow[1]) {
+      console.error('JWT_SECRET not found in Config sheet');
+      return res.status(500).json({
+        error: 'Server configuration error',
+        valid: false
+      });
+    }
+
+    const JWT_SECRET = jwtSecretRow[1];
+
+    // Verify and decode JWT with signature verification
+    const decoded = verifyAndDecodeJWT(session, JWT_SECRET);
 
     // Check expiration
     const now = Math.floor(Date.now() / 1000);
@@ -67,22 +120,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Initialize Google Sheets API
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    });
-
-    const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-
     // Lookup customer by customer_id from JWT
     const customerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Customers!A:N',
+      range: 'Customers!A:P',
     });
 
     const rows = customerResponse.data.values || [];
@@ -95,10 +136,10 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ error: 'Customer not found', valid: false });
     }
 
-    // Check if session_token in sheet (column N, index 13) matches the JWT
-    const storedToken = customer[13];
+    // Check if session_token in sheet (column P, index 15) matches the JWT
+    const storedToken = customer[15];
     if (storedToken !== session) {
-      return res.status(401).json({ error: 'Session has been revoked', valid: false });
+      return res.status(401).json({ error: 'Session has been revoked or token mismatch', valid: false });
     }
 
     // Session is valid!
