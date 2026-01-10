@@ -37,20 +37,20 @@ module.exports = async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // Fetch customer data from Customers sheet (now including Column L for token)
+    // Fetch customer data from Customers sheet (up to Column P for session_token)
     const customerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Customers!A:L',
+      range: 'Customers!A:P',
     });
 
     const customerRows = customerResponse.data.values || [];
     const customerHeaders = customerRows[0] || [];
     const customerData = customerRows.slice(1);
 
-    // Find customer by token (Column L, index 11) or by customer_id (Column A, index 0)
+    // Find customer by token (Column N, index 13) or by customer_id (Column A, index 0)
     let customer;
     if (token) {
-      customer = customerData.find(row => row[11] === token);
+      customer = customerData.find(row => row[13] === token);
       if (!customer) {
         return res.status(404).json({ error: 'Invalid or expired token' });
       }
@@ -62,17 +62,18 @@ module.exports = async function handler(req, res) {
     }
 
     // Map customer data to object
+    // Columns: A=customer_id, B=name, C=surname, D=email, E=company_name, F=website_url, G=plan, H=scan_frequency, I=created_date, J=last_scan_date, K=current_score, L=status, M=pages_to_scan, N=token, O=password_hash, P=session_token
     const customerObj = {
-      customer_id: customer[0],
-      email: customer[1],
-      company_name: customer[2],
-      website_url: customer[3],
-      plan: customer[4],
-      scan_frequency: customer[5],
-      created_date: customer[6],
-      last_scan_date: customer[7],
-      current_score: customer[8],
-      status: customer[9],
+      customer_id: customer[0],  // Column A
+      email: customer[3],        // Column D
+      company_name: customer[4], // Column E
+      website_url: customer[5],  // Column F
+      plan: customer[6],         // Column G
+      scan_frequency: customer[7], // Column H
+      created_date: customer[8], // Column I
+      last_scan_date: customer[9], // Column J
+      current_score: customer[10], // Column K
+      status: customer[11],      // Column L
     };
 
     // Store the customer_id for filtering scans (works for both token and customer_id auth)
