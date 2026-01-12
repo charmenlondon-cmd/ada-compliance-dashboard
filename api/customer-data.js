@@ -187,9 +187,25 @@ module.exports = async function handler(req, res) {
     }));
 
     // Parse scanned page URLs from Column H (index 7) of the latest scan
-    const scannedPageUrls = (latestScan && latestScan[7])
-      ? latestScan[7].split(',').map(url => url.trim()).filter(Boolean)
-      : [];
+    // Handle both old format (stringified array) and new format (comma-separated string)
+    const scannedPageUrls = (() => {
+      if (!latestScan || !latestScan[7]) return [];
+
+      const raw = latestScan[7];
+
+      // Handle old format: stringified array like '["url1","url2"]'
+      if (raw.startsWith('[') && raw.endsWith(']')) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error('Failed to parse scanned_page_urls as JSON:', e);
+          return [];
+        }
+      }
+
+      // Handle new format: comma-separated string like 'url1,url2,url3'
+      return raw.split(',').map(url => url.trim()).filter(Boolean);
+    })();
 
     // Build response matching dashboard expectations
     // NEW STRUCTURE: A=scan_id, B=customer_id, C=company_name, D=email, E=website_url, F=plan, G=pages_scanned, H=scanned_page_urls, I=compliance_score, J=total_violations, K=critical_count, L=serious_count, M=moderate_count, N=minor_count, O=scan_date, P=scan_duration_seconds, Q=status, R=max_pages, S=scanner_version, T=success, U=scan_method, V=ai_analysis, W=ai_level
