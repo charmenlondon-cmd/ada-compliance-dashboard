@@ -105,10 +105,10 @@ module.exports = async function handler(req, res) {
       cancelled_date: subscription[9],
     } : null;
 
-    // Fetch scan history from Scan Summary sheet (now includes columns A:W after restructure)
+    // Fetch scan history from Scan Summary sheet (columns A:M based on current structure)
     const scansResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Scan Summary!A:W',
+      range: 'Scan Summary!A:M',
     });
 
     const scanRows = scansResponse.data.values || [];
@@ -117,8 +117,8 @@ module.exports = async function handler(req, res) {
     // Filter scans for this customer (customer_id is column B, index 1)
     const customerScans = scanData.filter(row => row[1] === actualCustomerId);
 
-    // Sort by scan_date descending to get latest first (scan_date is NOW Column O, index 14)
-    customerScans.sort((a, b) => new Date(b[14]) - new Date(a[14]));
+    // Sort by scan_date descending to get latest first (scan_date is Column K, index 10)
+    customerScans.sort((a, b) => new Date(b[10]) - new Date(a[10]));
 
     const latestScan = customerScans[0];
 
@@ -182,36 +182,22 @@ module.exports = async function handler(req, res) {
 
     // Build historical data for trend chart (last 10 scans)
     const historical = customerScans.slice(0, 10).reverse().map(scan => ({
-      date: scan[14], // scan_date (NOW Column O, index 14)
-      score: parseInt(scan[8]) || 0, // compliance_score (NOW Column I, index 8)
+      date: scan[10], // scan_date (Column K, index 10)
+      score: parseInt(scan[4]) || 0, // compliance_score (Column E, index 4)
     }));
 
-    // Parse scanned page URLs from Column H (index 7) of the latest scan
-    // Handle both old format (stringified array) and new format (comma-separated string)
-    const scannedPageUrls = (() => {
-      if (!latestScan || !latestScan[7]) return [];
-
-      const raw = latestScan[7];
-
-      // Handle old format: stringified array like '["url1","url2"]'
-      if (raw.startsWith('[') && raw.endsWith(']')) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error('Failed to parse scanned_page_urls as JSON:', e);
-          return [];
-        }
-      }
-
-      // Handle new format: comma-separated string like 'url1,url2,url3'
-      return raw.split(',').map(url => url.trim()).filter(Boolean);
-    })();
+    // scanned_page_urls is not in the current Google Sheets structure
+    // Future enhancement: can be added as a new column if needed
+    const scannedPageUrls = [];
 
     // Build response matching dashboard expectations
-    // NEW STRUCTURE: A=scan_id, B=customer_id, C=company_name, D=email, E=website_url, F=plan, G=pages_scanned, H=scanned_page_urls, I=compliance_score, J=total_violations, K=critical_count, L=serious_count, M=moderate_count, N=minor_count, O=scan_date, P=scan_duration_seconds, Q=status, R=max_pages, S=scanner_version, T=success, U=scan_method, V=ai_analysis, W=ai_level
+    // ACTUAL STRUCTURE from n8n workflows and Google Sheets:
+    // A=scan_id, B=customer_id, C=website_url, D=pages_scanned, E=compliance_score, F=total_violations,
+    // G=critical_count, H=serious_count, I=moderate_count, J=minor_count, K=scan_date,
+    // L=scan_duration_seconds, M=status
     const response = {
-      score: latestScan ? parseInt(latestScan[8]) || 0 : 0, // NOW Column I (index 8)
-      lastScan: latestScan ? latestScan[14] : customerObj.last_scan_date, // NOW Column O (index 14)
+      score: latestScan ? parseInt(latestScan[4]) || 0 : 0, // Column E (index 4)
+      lastScan: latestScan ? latestScan[10] : customerObj.last_scan_date, // Column K (index 10)
       violations: violations.map(v => ({
         impact: v.impact,
         rule_id: v.rule_id,
@@ -232,29 +218,20 @@ module.exports = async function handler(req, res) {
         subscription: subscriptionObj, // Include subscription data
       },
       scan_summary: latestScan ? {
-        scan_id: latestScan[0], // Column A (index 0) - unchanged
-        customer_id: latestScan[1], // Column B (index 1) - unchanged
-        company_name: latestScan[2], // Column C (index 2) - NEW
-        email: latestScan[3], // Column D (index 3) - NEW
-        website_url: latestScan[4], // Column E (index 4) - NEW
-        plan: latestScan[5], // Column F (index 5) - NEW
-        pages_scanned: parseInt(latestScan[6]) || 0, // NOW Column G (index 6)
-        scanned_page_urls: scannedPageUrls, // NOW Column H (index 7)
-        compliance_score: parseInt(latestScan[8]) || 0, // NOW Column I (index 8)
-        total_violations: parseInt(latestScan[9]) || 0, // NOW Column J (index 9)
-        critical_count: parseInt(latestScan[10]) || 0, // NOW Column K (index 10)
-        serious_count: parseInt(latestScan[11]) || 0, // NOW Column L (index 11)
-        moderate_count: parseInt(latestScan[12]) || 0, // NOW Column M (index 12)
-        minor_count: parseInt(latestScan[13]) || 0, // NOW Column N (index 13)
-        scan_date: latestScan[14], // NOW Column O (index 14)
-        scan_duration_seconds: latestScan[15], // NOW Column P (index 15)
-        status: latestScan[16], // NOW Column Q (index 16)
-        max_pages: parseInt(latestScan[17]) || 0, // Column R (index 17) - NEW
-        scanner_version: latestScan[18], // Column S (index 18) - NEW
-        success: latestScan[19], // Column T (index 19) - NEW
-        scan_method: latestScan[20], // Column U (index 20) - NEW
-        ai_analysis: latestScan[21], // Column V (index 21) - NEW
-        ai_level: latestScan[22], // Column W (index 22) - NEW
+        scan_id: latestScan[0], // Column A (index 0)
+        customer_id: latestScan[1], // Column B (index 1)
+        website_url: latestScan[2], // Column C (index 2)
+        pages_scanned: parseInt(latestScan[3]) || 0, // Column D (index 3)
+        compliance_score: parseInt(latestScan[4]) || 0, // Column E (index 4)
+        total_violations: parseInt(latestScan[5]) || 0, // Column F (index 5)
+        critical_count: parseInt(latestScan[6]) || 0, // Column G (index 6)
+        serious_count: parseInt(latestScan[7]) || 0, // Column H (index 7)
+        moderate_count: parseInt(latestScan[8]) || 0, // Column I (index 8)
+        minor_count: parseInt(latestScan[9]) || 0, // Column J (index 9)
+        scan_date: latestScan[10], // Column K (index 10)
+        scan_duration_seconds: latestScan[11], // Column L (index 11)
+        status: latestScan[12], // Column M (index 12)
+        scanned_page_urls: scannedPageUrls, // Not in sheets, placeholder for frontend
       } : null,
     };
 
