@@ -1126,6 +1126,8 @@
 
             // Update violations grid
             const violationsGrid = document.getElementById('violations-grid');
+            const totalViolations = data.scan_summary?.total_violations || 0;
+
             if (data.violations && data.violations.length > 0) {
                 // Sort by severity: critical → serious → moderate → minor
                 const impactOrder = { 'critical': 1, 'serious': 2, 'moderate': 3, 'minor': 4 };
@@ -1140,6 +1142,8 @@
                         <small>Impact: ${v.impact} | Page: ${v.page_url || 'Homepage'}</small>
                     </div>
                 `).join('');
+            } else if (totalViolations > 0) {
+                violationsGrid.innerHTML = '<div class="loading">Violation details are loading. Check summary counts above.</div>';
             } else {
                 violationsGrid.innerHTML = '<div class="no-violations">🎉 No violations found! Great job!</div>';
             }
@@ -1238,8 +1242,14 @@
                 return;
             }
 
-            if (violations.length === 0) {
+            // Check if there are violations in scan summary
+            const totalViolations = window.currentCustomerData?.scan_summary?.total_violations || 0;
+
+            if (violations.length === 0 && totalViolations === 0) {
                 recommendationsList.innerHTML = '<li class="no-violations">🎉 No recommendations needed - your site is fully compliant!</li>';
+                return;
+            } else if (violations.length === 0 && totalViolations > 0) {
+                recommendationsList.innerHTML = '<li class="loading">Recommendations are loading. Please check back shortly.</li>';
                 return;
             }
 
