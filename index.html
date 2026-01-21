@@ -413,6 +413,27 @@
             transform: translateY(-1px);
         }
 
+        /* Dropdown Menu Styles */
+        .nav-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px); /* 8px below the nav-container */
+            right: 40px; /* Align with nav-container padding */
+            min-width: 200px;
+            max-width: 95vw; /* Prevent viewport overflow */
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 1001;
+            overflow-y: auto;
+            max-height: 90vh; /* Prevent vertical overflow */
+            transform-origin: top right;
+        }
+
+        .nav-dropdown.show {
+            display: block;
+        }
+
         /* Cancellation Modal */
         .modal-overlay {
             display: none;
@@ -555,6 +576,13 @@
                 bottom: 20px;
                 right: 20px;
                 font-size: 20px;
+            }
+
+            /* Mobile dropdown positioning */
+            .nav-dropdown {
+                right: 20px; /* Match mobile nav-container padding */
+                max-width: calc(100vw - 40px); /* Account for padding on both sides */
+                min-width: 160px;
             }
         }
 
@@ -745,7 +773,7 @@
                 <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
             </button>
 
-            <div id="menuDropdown" style="display: none; position: absolute; top: 58px; right: 40px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 200px; z-index: 1001;">
+            <div id="menuDropdown" class="nav-dropdown">
                 <div style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" onclick="window.location.href='https://bisonblu.com'">
                     Home
                 </div>
@@ -935,7 +963,7 @@
         // Simple menu toggle
         document.getElementById('menuButton').onclick = function() {
             var dropdown = document.getElementById('menuDropdown');
-            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            dropdown.classList.toggle('show');
         };
 
         // My Account toggle
@@ -955,7 +983,7 @@
         // Close menu when clicking outside
         document.onclick = function(e) {
             if (!e.target.closest('#menuButton') && !e.target.closest('#menuDropdown')) {
-                document.getElementById('menuDropdown').style.display = 'none';
+                document.getElementById('menuDropdown').classList.remove('show');
             }
         };
 
