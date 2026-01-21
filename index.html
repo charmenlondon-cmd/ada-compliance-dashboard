@@ -55,12 +55,12 @@
         }
 
         .logo-icon {
-            height: 100px;
+            height: 60px;
             width: auto;
         }
 
         .logo-text-img {
-            height: 80px;
+            height: 48px;
             width: auto;
             margin-left: 12px;
         }
@@ -89,6 +89,13 @@
         .header p {
             color: #606887;
             font-size: 1.1rem;
+        }
+
+        #company-name {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #002059;
+            margin-top: 8px;
         }
 
         .dashboard-grid {
@@ -517,6 +524,10 @@
                 font-size: 1rem;
             }
 
+            #company-name {
+                font-size: 1.5rem;
+            }
+
             .score-value {
                 font-size: 3rem;
             }
@@ -728,11 +739,13 @@
                 <img src="/logo-text.png" alt="AI Labs" class="logo-text-img">
             </a>
 
-            <button id="menuButton" style="background: #007480; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
-                Menu
+            <button id="menuButton" style="background: #007480; color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; width: 48px; height: 48px;">
+                <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
+                <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
+                <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
             </button>
 
-            <div id="menuDropdown" style="display: none; position: absolute; top: 140px; right: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; z-index: 1001;">
+            <div id="menuDropdown" style="display: none; position: absolute; top: 58px; right: 0; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 200px; z-index: 1001;">
                 <div style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" onclick="window.location.href='https://bisonblu.com'">
                     Home
                 </div>
