@@ -38,6 +38,7 @@
         }
 
         .nav-container {
+            position: relative;
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 40px;
@@ -418,7 +419,7 @@
             display: none;
             position: absolute;
             top: calc(100% + 8px); /* 8px below the nav-container */
-            right: 40px; /* Align with nav-container padding */
+            right: 0; /* Align with right edge of nav-container (which has 40px padding) */
             min-width: 200px;
             max-width: 95vw; /* Prevent viewport overflow */
             background: white;
@@ -580,7 +581,7 @@
 
             /* Mobile dropdown positioning */
             .nav-dropdown {
-                right: 20px; /* Match mobile nav-container padding */
+                right: 0; /* Align with nav-container edge (padding handled by parent) */
                 max-width: calc(100vw - 40px); /* Account for padding on both sides */
                 min-width: 160px;
             }
