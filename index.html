@@ -2052,6 +2052,9 @@
 
                 const data = await response.json();
 
+                // DEBUG: Log the response to see what we're getting
+                console.log('n8n Response:', data);
+
                 if (data.success && data.checkout_url) {
                     // Close the modal
                     closeGuestUpgradeModal();
