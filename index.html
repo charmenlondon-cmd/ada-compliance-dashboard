@@ -718,6 +718,60 @@
             padding: 40px 20px;
             font-style: italic;
         }
+
+        /* AI Analysis Styles */
+        .ai-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007480;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .ai-issues-section {
+            margin-top: 20px;
+        }
+
+        .ai-issues-section h3 {
+            font-size: 1rem;
+            color: #007480;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .ai-issue-item {
+            background: #fff;
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid #007480;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .ai-issue-item h4 {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .ai-issue-item p {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .no-ai-analysis {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -875,6 +929,14 @@
                 <div class="violation-counts" id="violation-counts"></div>
                 <div class="violations-grid" id="violations-grid">
                     <div class="loading">Loading violations...</div>
+                </div>
+            </div>
+
+            <!-- AI Analysis -->
+            <div class="card violations-section" id="ai-analysis-card">
+                <h2>AI Analysis <span id="ai-level-badge" style="font-size: 0.7rem; font-weight: 600; padding: 4px 12px; border-radius: 12px; margin-left: 10px;"></span></h2>
+                <div id="ai-analysis-content">
+                    <div class="loading">Loading AI analysis...</div>
                 </div>
             </div>
 
@@ -1193,6 +1255,9 @@
             // Update recommendations
             updateRecommendations(data.violations || []);
 
+            // Update AI analysis
+            updateAIAnalysis(data.scan_summary);
+
             // Update trend chart
             updateTrendChart(data.historical || []);
 
@@ -1335,6 +1400,89 @@
                 .split('-')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
+        }
+
+        function updateAIAnalysis(scanSummary) {
+            const aiAnalysisContent = document.getElementById('ai-analysis-content');
+            const aiLevelBadge = document.getElementById('ai-level-badge');
+            const aiAnalysisCard = document.getElementById('ai-analysis-card');
+
+            // Check if AI analysis data exists
+            if (!scanSummary || !scanSummary.ai_analysis) {
+                aiAnalysisCard.style.display = 'none';
+                return;
+            }
+
+            aiAnalysisCard.style.display = 'block';
+
+            // Display AI level badge
+            const aiLevel = scanSummary.ai_level || 'basic';
+            const badgeColors = {
+                'guest': { bg: '#f0f0f0', text: '#666' },
+                'basic': { bg: '#17a2b8', text: 'white' },
+                'advanced': { bg: '#007480', text: 'white' }
+            };
+            const colors = badgeColors[aiLevel] || badgeColors['basic'];
+            aiLevelBadge.textContent = aiLevel.charAt(0).toUpperCase() + aiLevel.slice(1) + ' AI';
+            aiLevelBadge.style.background = colors.bg;
+            aiLevelBadge.style.color = colors.text;
+
+            // Parse AI analysis (it's stored as JSON string)
+            let aiData;
+            try {
+                aiData = typeof scanSummary.ai_analysis === 'string'
+                    ? JSON.parse(scanSummary.ai_analysis)
+                    : scanSummary.ai_analysis;
+            } catch (e) {
+                console.error('Failed to parse AI analysis:', e);
+                aiAnalysisContent.innerHTML = '<div class="no-ai-analysis">Unable to parse AI analysis data</div>';
+                return;
+            }
+
+            // Build the display HTML
+            let html = '';
+
+            // Summary section
+            if (aiData.summary) {
+                html += `<div class="ai-summary">${aiData.summary}</div>`;
+            }
+
+            // Visual issues section
+            if (aiData.visual_issues && aiData.visual_issues.length > 0) {
+                html += '<div class="ai-issues-section">';
+                html += '<h3>Visual Issues</h3>';
+                aiData.visual_issues.forEach(issue => {
+                    html += `
+                        <div class="ai-issue-item">
+                            <h4>${issue.type || 'Visual Issue'}</h4>
+                            <p>${issue.description || issue.issue || ''}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Content issues section
+            if (aiData.content_issues && aiData.content_issues.length > 0) {
+                html += '<div class="ai-issues-section">';
+                html += '<h3>Content Issues</h3>';
+                aiData.content_issues.forEach(issue => {
+                    html += `
+                        <div class="ai-issue-item">
+                            <h4>${issue.type || 'Content Issue'}</h4>
+                            <p>${issue.description || issue.issue || ''}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // If no issues found
+            if (!aiData.summary && (!aiData.visual_issues || aiData.visual_issues.length === 0) && (!aiData.content_issues || aiData.content_issues.length === 0)) {
+                html = '<div class="no-ai-analysis">🎉 No additional issues detected by AI analysis!</div>';
+            }
+
+            aiAnalysisContent.innerHTML = html;
         }
 
         function updateTrendChart(historical) {
