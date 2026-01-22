@@ -1548,7 +1548,44 @@
                 html += `<div class="ai-summary">${aiData.summary}</div>`;
             }
 
-            // Visual issues section
+            // Priority fixes section (actual data structure from AI)
+            if (aiData.priority_fixes && aiData.priority_fixes.length > 0) {
+                html += '<div class="ai-issues-section">';
+                html += '<h3>Priority Fixes</h3>';
+                aiData.priority_fixes.forEach(fix => {
+                    const impactColors = {
+                        'critical': '#dc3545',
+                        'serious': '#fd7e14',
+                        'moderate': '#ffc107',
+                        'minor': '#17a2b8'
+                    };
+                    const impactColor = impactColors[fix.impact?.toLowerCase()] || '#007480';
+
+                    html += `
+                        <div class="ai-issue-item" style="border-left-color: ${impactColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h4 style="margin: 0;">${fix.issue || 'Accessibility Issue'}</h4>
+                                <span style="background: ${impactColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${fix.impact || 'issue'}</span>
+                            </div>
+                            ${fix.explanation ? `<p style="margin-bottom: 8px;"><strong>Why this matters:</strong> ${fix.explanation}</p>` : ''}
+                            ${fix.fix ? `<p style="margin-bottom: 0; color: #007480;"><strong>How to fix:</strong> ${fix.fix}</p>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Estimated fix time (if provided)
+            if (aiData.estimated_fix_time) {
+                html += `
+                    <div style="margin-top: 20px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                        <strong style="color: #17a2b8; font-size: 0.9rem;">⏱️ Estimated Fix Time:</strong>
+                        <p style="margin: 8px 0 0 0; color: #666; font-size: 0.9rem;">${aiData.estimated_fix_time}</p>
+                    </div>
+                `;
+            }
+
+            // Support legacy format (visual_issues and content_issues) for backwards compatibility
             if (aiData.visual_issues && aiData.visual_issues.length > 0) {
                 html += '<div class="ai-issues-section">';
                 html += '<h3>Visual Issues</h3>';
@@ -1563,7 +1600,6 @@
                 html += '</div>';
             }
 
-            // Content issues section
             if (aiData.content_issues && aiData.content_issues.length > 0) {
                 html += '<div class="ai-issues-section">';
                 html += '<h3>Content Issues</h3>';
@@ -1579,7 +1615,7 @@
             }
 
             // If no issues found
-            if (!aiData.summary && (!aiData.visual_issues || aiData.visual_issues.length === 0) && (!aiData.content_issues || aiData.content_issues.length === 0)) {
+            if (!aiData.summary && (!aiData.priority_fixes || aiData.priority_fixes.length === 0) && (!aiData.visual_issues || aiData.visual_issues.length === 0) && (!aiData.content_issues || aiData.content_issues.length === 0)) {
                 html = '<div class="no-ai-analysis">🎉 No additional issues detected by AI analysis!</div>';
             }
 
