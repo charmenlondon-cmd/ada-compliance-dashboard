@@ -932,20 +932,20 @@
                 </div>
             </div>
 
-            <!-- AI Analysis -->
-            <div class="card violations-section" id="ai-analysis-card">
-                <h2>AI Analysis <span id="ai-level-badge" style="font-size: 0.7rem; font-weight: 600; padding: 4px 12px; border-radius: 12px; margin-left: 10px;"></span></h2>
-                <div id="ai-analysis-content">
-                    <div class="loading">Loading AI analysis...</div>
-                </div>
-            </div>
-
             <!-- Recommendations -->
             <div class="card violations-section">
                 <h2>Recommendations</h2>
                 <ul class="recommendations-list" id="recommendations-list">
                     <li class="loading">Loading recommendations...</li>
                 </ul>
+            </div>
+
+            <!-- AI Analysis -->
+            <div class="card violations-section" id="ai-analysis-card">
+                <h2>AI Analysis</h2>
+                <div id="ai-analysis-content">
+                    <div class="loading">Loading AI analysis...</div>
+                </div>
             </div>
 
             <!-- Trend Chart (moved down) -->
@@ -1404,7 +1404,6 @@
 
         function updateAIAnalysis(scanSummary) {
             const aiAnalysisContent = document.getElementById('ai-analysis-content');
-            const aiLevelBadge = document.getElementById('ai-level-badge');
             const aiAnalysisCard = document.getElementById('ai-analysis-card');
 
             // Check if AI analysis data exists
@@ -1414,18 +1413,6 @@
             }
 
             aiAnalysisCard.style.display = 'block';
-
-            // Display AI level badge
-            const aiLevel = scanSummary.ai_level || 'basic';
-            const badgeColors = {
-                'guest': { bg: '#f0f0f0', text: '#666' },
-                'basic': { bg: '#17a2b8', text: 'white' },
-                'advanced': { bg: '#007480', text: 'white' }
-            };
-            const colors = badgeColors[aiLevel] || badgeColors['basic'];
-            aiLevelBadge.textContent = aiLevel.charAt(0).toUpperCase() + aiLevel.slice(1) + ' AI';
-            aiLevelBadge.style.background = colors.bg;
-            aiLevelBadge.style.color = colors.text;
 
             // Parse AI analysis (it's stored as JSON string)
             let aiData;
