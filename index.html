@@ -306,6 +306,28 @@
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .count-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .count-badge.active {
+            border: 2px solid #333;
+            box-shadow: 0 0 0 3px rgba(0, 116, 128, 0.2);
+        }
+
+        .count-badge.all {
+            background: #007480;
+            color: white;
+        }
+
+        .count-badge.all.active {
+            border: 2px solid #333;
         }
 
         .count-badge.critical {
@@ -1089,6 +1111,8 @@
     <script>
         let trendChart = null;
         let lastScrollTop = 0;
+        let allViolations = []; // Store all violations for filtering
+        let currentFilter = 'all'; // Track active filter
         const nav = document.querySelector('.top-nav');
         const returnToTopBtn = document.getElementById('returnToTop');
 
@@ -1321,29 +1345,40 @@
                 `;
             }
 
-            // Update violation counts
+            // Update violation counts with clickable filters
             if (data.scan_summary) {
                 const countsHtml = [];
+                const totalViolations = data.scan_summary.total_violations || 0;
+
+                // Add "All Violations" button first
+                if (totalViolations > 0) {
+                    countsHtml.push(`<span class="count-badge all active" onclick="filterViolations('all')">${totalViolations} All Violations</span>`);
+                }
+
+                // Add individual impact badges
                 if (data.scan_summary.critical_count > 0) {
-                    countsHtml.push(`<span class="count-badge critical">${data.scan_summary.critical_count} Critical</span>`);
+                    countsHtml.push(`<span class="count-badge critical" onclick="filterViolations('critical')">${data.scan_summary.critical_count} Critical</span>`);
                 }
                 if (data.scan_summary.serious_count > 0) {
-                    countsHtml.push(`<span class="count-badge serious">${data.scan_summary.serious_count} Serious</span>`);
+                    countsHtml.push(`<span class="count-badge serious" onclick="filterViolations('serious')">${data.scan_summary.serious_count} Serious</span>`);
                 }
                 if (data.scan_summary.moderate_count > 0) {
-                    countsHtml.push(`<span class="count-badge moderate">${data.scan_summary.moderate_count} Moderate</span>`);
+                    countsHtml.push(`<span class="count-badge moderate" onclick="filterViolations('moderate')">${data.scan_summary.moderate_count} Moderate</span>`);
                 }
                 if (data.scan_summary.minor_count > 0) {
-                    countsHtml.push(`<span class="count-badge minor">${data.scan_summary.minor_count} Minor</span>`);
+                    countsHtml.push(`<span class="count-badge minor" onclick="filterViolations('minor')">${data.scan_summary.minor_count} Minor</span>`);
                 }
                 document.getElementById('violation-counts').innerHTML = countsHtml.join('');
             }
 
-            // Update violations grid
+            // Store violations globally and update violations grid
             const violationsGrid = document.getElementById('violations-grid');
             const totalViolations = data.scan_summary?.total_violations || 0;
 
             if (data.violations && data.violations.length > 0) {
+                // Store violations globally for filtering
+                allViolations = data.violations;
+
                 // Sort by severity: critical → serious → moderate → minor
                 const impactOrder = { 'critical': 1, 'serious': 2, 'moderate': 3, 'minor': 4 };
                 const sortedViolations = [...data.violations].sort((a, b) =>
@@ -1357,6 +1392,9 @@
                         <small>Impact: ${v.impact} | Page: ${v.page_url || 'Homepage'}</small>
                     </div>
                 `).join('');
+
+                // Reset filter to 'all' on data load
+                currentFilter = 'all';
             } else if (totalViolations > 0) {
                 violationsGrid.innerHTML = '<div class="loading">Violation details are loading. Check summary counts above.</div>';
             } else {
@@ -1514,6 +1552,45 @@
                 .split('-')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
+        }
+
+        function filterViolations(impactLevel) {
+            currentFilter = impactLevel;
+
+            // Update active state on badges
+            document.querySelectorAll('.count-badge').forEach(badge => {
+                badge.classList.remove('active');
+            });
+            document.querySelector(`.count-badge[onclick*="${impactLevel}"]`)?.classList.add('active');
+
+            // Filter violations
+            const violationsGrid = document.getElementById('violations-grid');
+            let filteredViolations;
+
+            if (impactLevel === 'all') {
+                filteredViolations = allViolations;
+            } else {
+                filteredViolations = allViolations.filter(v => v.impact === impactLevel);
+            }
+
+            // Sort by severity
+            const impactOrder = { 'critical': 1, 'serious': 2, 'moderate': 3, 'minor': 4 };
+            const sortedViolations = [...filteredViolations].sort((a, b) =>
+                (impactOrder[a.impact] || 5) - (impactOrder[b.impact] || 5)
+            );
+
+            // Update display
+            if (sortedViolations.length > 0) {
+                violationsGrid.innerHTML = sortedViolations.map(v => `
+                    <div class="violation-card ${v.impact}">
+                        <h4>${formatRuleId(v.rule_id)}</h4>
+                        <p>${v.description}</p>
+                        <small>Impact: ${v.impact} | Page: ${v.page_url || 'Homepage'}</small>
+                    </div>
+                `).join('');
+            } else {
+                violationsGrid.innerHTML = '<div class="no-violations">No violations found for this filter.</div>';
+            }
         }
 
         function updateAIAnalysis(scanSummary) {
