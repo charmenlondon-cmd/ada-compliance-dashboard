@@ -1530,10 +1530,9 @@
                 }
             });
 
-            // Sort by impact priority
+            // Sort by impact priority and show all recommendations
             const sortedRecommendations = Array.from(uniqueRecommendations.values())
-                .sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact])
-                .slice(0, 10); // Show top 10 recommendations
+                .sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact]);
 
             recommendationsList.innerHTML = sortedRecommendations.map(rec => `
                 <li class="recommendation-item">
