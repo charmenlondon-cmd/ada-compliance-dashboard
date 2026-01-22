@@ -774,6 +774,85 @@
             color: #888;
             font-style: italic;
         }
+
+        /* Scanning Overlay Styles */
+        .scanning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .scanning-content {
+            text-align: center;
+            max-width: 500px;
+            padding: 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .scanning-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #007480;
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .scanning-content h2 {
+            color: #002059;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .scanning-content p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .scanning-tip {
+            color: #007480;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 768px) {
+            .scanning-content {
+                max-width: 90%;
+                padding: 30px 20px;
+            }
+
+            .scanning-content h2 {
+                font-size: 1.4rem;
+            }
+
+            .scanning-content p {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -972,6 +1051,16 @@
     <button class="return-to-top" id="returnToTop" aria-label="Return to top">
         ↑
     </button>
+
+    <!-- Scanning In Progress Overlay -->
+    <div id="scanningOverlay" class="scanning-overlay" style="display: none;">
+        <div class="scanning-content">
+            <div class="scanning-spinner"></div>
+            <h2>We're scanning your site now</h2>
+            <p>This may take a few minutes. Once complete, your results will appear here and will also be emailed to you.</p>
+            <p class="scanning-tip">Feel free to leave this page and return later using the link in your email to view your scan results.</p>
+        </div>
+    </div>
 
     <!-- Cancellation Modal -->
     <div class="modal-overlay" id="cancelModal">
@@ -1178,6 +1267,17 @@
             // Store customer_id globally for rescan functionality
             if (data.customer && data.customer.id) {
                 window.customerIdFromData = data.customer.id;
+            }
+
+            // Check if scan is in progress
+            const scanStatus = data.scan_summary?.status?.toLowerCase();
+            if (scanStatus === 'in_progress' || scanStatus === 'pending' || scanStatus === 'scanning') {
+                showScanningOverlay();
+                // Auto-refresh every 30 seconds to check if scan completed
+                setTimeout(loadDashboard, 30000);
+                return; // Don't update dashboard with empty/incomplete data
+            } else {
+                hideScanningOverlay();
             }
 
             // Update company name in header
@@ -1615,7 +1715,22 @@
             }
         }
 
+        function showScanningOverlay() {
+            const overlay = document.getElementById('scanningOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function hideScanningOverlay() {
+            const overlay = document.getElementById('scanningOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+
         function showError(message) {
+            hideScanningOverlay(); // Hide overlay if showing error
             document.getElementById('compliance-score').textContent = '--';
             document.getElementById('last-scan').textContent = 'Error loading data';
             document.getElementById('customer-info').innerHTML = `<div class="error">${message}</div>`;
