@@ -1350,23 +1350,23 @@
                 const countsHtml = [];
                 const totalViolations = data.scan_summary.total_violations || 0;
 
-                // Add "All Violations" button first
+                // Add "Total Violations" button first
                 if (totalViolations > 0) {
-                    countsHtml.push(`<span class="count-badge all active" onclick="filterViolations('all')">${totalViolations} All Violations</span>`);
+                    countsHtml.push(`<span class="count-badge all active" onclick="filterViolations('all')">Total Violations - ${totalViolations}</span>`);
                 }
 
                 // Add individual impact badges
                 if (data.scan_summary.critical_count > 0) {
-                    countsHtml.push(`<span class="count-badge critical" onclick="filterViolations('critical')">${data.scan_summary.critical_count} Critical</span>`);
+                    countsHtml.push(`<span class="count-badge critical" onclick="filterViolations('critical')">Critical - ${data.scan_summary.critical_count}</span>`);
                 }
                 if (data.scan_summary.serious_count > 0) {
-                    countsHtml.push(`<span class="count-badge serious" onclick="filterViolations('serious')">${data.scan_summary.serious_count} Serious</span>`);
+                    countsHtml.push(`<span class="count-badge serious" onclick="filterViolations('serious')">Serious - ${data.scan_summary.serious_count}</span>`);
                 }
                 if (data.scan_summary.moderate_count > 0) {
-                    countsHtml.push(`<span class="count-badge moderate" onclick="filterViolations('moderate')">${data.scan_summary.moderate_count} Moderate</span>`);
+                    countsHtml.push(`<span class="count-badge moderate" onclick="filterViolations('moderate')">Moderate - ${data.scan_summary.moderate_count}</span>`);
                 }
                 if (data.scan_summary.minor_count > 0) {
-                    countsHtml.push(`<span class="count-badge minor" onclick="filterViolations('minor')">${data.scan_summary.minor_count} Minor</span>`);
+                    countsHtml.push(`<span class="count-badge minor" onclick="filterViolations('minor')">Minor - ${data.scan_summary.minor_count}</span>`);
                 }
                 document.getElementById('violation-counts').innerHTML = countsHtml.join('');
             }
