@@ -1261,6 +1261,9 @@
             // Update trend chart
             updateTrendChart(data.historical || []);
 
+            // Update trend chart visibility based on plan
+            updateTrendChartVisibility(data.customer);
+
             // Update scan button visibility based on plan
             updateScanButtonVisibility();
         }
@@ -1534,6 +1537,26 @@
                     }
                 }
             });
+        }
+
+        function updateTrendChartVisibility(customer) {
+            const trendChartCard = document.querySelector('.chart-container');
+
+            if (!customer || !customer.plan) {
+                // If no plan info, hide by default
+                trendChartCard.style.display = 'none';
+                return;
+            }
+
+            const plan = customer.plan.toLowerCase();
+
+            // Hide trend chart for free and guest users (one-off scans)
+            // Show for all paid plans (essentials, professional, starter, pro, etc.)
+            if (plan === 'free' || plan === 'guest') {
+                trendChartCard.style.display = 'none';
+            } else {
+                trendChartCard.style.display = 'block';
+            }
         }
 
         function showError(message) {
