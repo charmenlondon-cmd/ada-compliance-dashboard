@@ -2,7 +2,7 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|payment-success|payment-cancelled).*)",
       "destination": "/index.html"
     }
   ]
