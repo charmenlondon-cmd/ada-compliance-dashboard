@@ -917,6 +917,41 @@
         </div>
     </div>
 
+    <!-- Guest Upgrade Modal -->
+    <div id="guestUpgradeModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeGuestUpgradeModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Request New Scan</h2>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 24px; color: #666; font-size: 0.95rem;">Choose how you'd like to proceed with your next scan:</p>
+
+                <div style="display: grid; gap: 20px;">
+                    <!-- Option 1: One-Time Scan -->
+                    <div style="border: 2px solid #007480; border-radius: 12px; padding: 24px; background: #f8f9fa;">
+                        <h3 style="color: #007480; margin-bottom: 12px; font-size: 1.2rem;">Fresh Scan - One Time</h3>
+                        <p style="font-size: 2rem; font-weight: 700; color: #333; margin-bottom: 8px;">$25</p>
+                        <p style="color: #666; margin-bottom: 16px; font-size: 0.9rem;">Single comprehensive accessibility scan</p>
+                        <button class="btn btn-primary" onclick="handleGuestPayment()" style="width: 100%;">Purchase Scan</button>
+                    </div>
+
+                    <!-- Option 2: Upgrade to Essentials -->
+                    <div style="border: 2px solid #28a745; border-radius: 12px; padding: 24px; background: #f0f8f4; position: relative;">
+                        <div style="position: absolute; top: -12px; right: 20px; background: #28a745; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">SAVE 49%</div>
+                        <h3 style="color: #28a745; margin-bottom: 12px; font-size: 1.2rem;">Upgrade to Essentials</h3>
+                        <p style="font-size: 2rem; font-weight: 700; color: #333; margin-bottom: 4px;">$12.75<span style="font-size: 1rem; font-weight: 400; color: #666;">/month</span></p>
+                        <p style="color: #666; margin-bottom: 16px; font-size: 0.9rem;">Weekly scans + priority support</p>
+                        <button class="btn btn-primary" onclick="handleEssentialsUpgrade()" style="width: 100%; background: #28a745;">Upgrade Now</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeGuestUpgradeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Top Navigation -->
     <nav class="top-nav">
         <div class="nav-container">
@@ -1906,11 +1941,14 @@
         function handleScanButtonClick() {
             const userPlan = window.currentCustomerData?.customer?.plan || 'free';
 
-            // Free and guest users see the upgrade modal
-            if (userPlan === 'free' || userPlan === 'guest') {
+            if (userPlan === 'free') {
+                // Free users see login modal
                 showLoginModal();
+            } else if (userPlan === 'guest') {
+                // Guest users see upgrade/repurchase modal
+                showGuestUpgradeModal();
             } else {
-                // Paid users can request scan directly
+                // Paid recurring users (essentials/professional) can request scan directly
                 requestRescan();
             }
         }
@@ -1979,6 +2017,91 @@
             const modal = document.getElementById('scannedPagesModal');
             modal.classList.remove('show');
         }
+
+        // Show guest upgrade modal
+        function showGuestUpgradeModal() {
+            const modal = document.getElementById('guestUpgradeModal');
+            modal.classList.add('show');
+        }
+
+        // Close guest upgrade modal
+        function closeGuestUpgradeModal() {
+            const modal = document.getElementById('guestUpgradeModal');
+            modal.classList.remove('show');
+        }
+
+        // Handle guest payment (one-time scan purchase)
+        async function handleGuestPayment() {
+            const { token, customerId } = getAuthFromURL();
+            const actualCustomerId = customerId || window.customerIdFromData;
+
+            if (!actualCustomerId) {
+                alert('Unable to identify customer. Please refresh and try again.');
+                return;
+            }
+
+            try {
+                // Call repeat_purchase n8n workflow
+                const response = await fetch('https://bisonblu.app.n8n.cloud/webhook/repeat_purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_id: actualCustomerId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.checkout_url) {
+                    // Close the modal
+                    closeGuestUpgradeModal();
+
+                    // Open Stripe checkout in new window
+                    const stripeWindow = window.open(data.checkout_url, '_blank', 'width=800,height=800');
+
+                    if (!stripeWindow) {
+                        alert('Please allow popups to complete your purchase.');
+                        return;
+                    }
+
+                    // Show message that payment window opened
+                    alert('Payment window opened. Complete your payment and this dashboard will update automatically.');
+                } else {
+                    throw new Error(data.message || 'Failed to create checkout session');
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Failed to initiate payment. Please try again or contact support.');
+            }
+        }
+
+        // Handle essentials upgrade
+        function handleEssentialsUpgrade() {
+            // Close the modal
+            closeGuestUpgradeModal();
+
+            // Redirect to Wix essentials signup form with query parameter to open lightbox
+            window.location.href = 'https://www.bisonblu.com/how-it-works?openEssentials_Sign_Up=true';
+        }
+
+        // Listen for payment success message from payment-success.html
+        window.addEventListener('message', function(event) {
+            // Verify message origin for security
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+
+            // Check if it's a payment success message
+            if (event.data.type === 'payment_success') {
+                console.log('✓ Payment successful! Customer:', event.data.customer_id);
+
+                // Show scanning overlay immediately
+                showScanningOverlay();
+
+                // The Stripe Payment Confirmation webhook will trigger the scan automatically
+                // The scanning overlay already has auto-refresh logic (30 second polling)
+            }
+        }, false);
 
         // Update scan button visibility based on plan
         function updateScanButtonVisibility() {
