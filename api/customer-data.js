@@ -180,8 +180,9 @@ module.exports = async function handler(req, res) {
       }));
     }
 
-    // Build historical data for trend chart (last 10 scans)
-    const historical = customerScans.slice(0, 10).reverse().map(scan => ({
+    // Build historical data for trend chart (ALL scans - no limit)
+    // Chart will auto-zoom to show last 20 by default, but all data is available for panning
+    const historical = customerScans.slice().reverse().map(scan => ({
       date: scan[14], // scan_date (NOW Column O, index 14)
       score: parseInt(scan[8]) || 0, // compliance_score (NOW Column I, index 8)
     }));

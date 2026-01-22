@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -950,9 +952,17 @@
 
             <!-- Trend Chart (moved down) -->
             <div class="card chart-container">
-                <h2>Compliance Trend</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 style="margin: 0;">Compliance Trend</h2>
+                    <button id="reset-zoom-btn" onclick="resetChartZoom()" style="display: none; padding: 8px 16px; background: #007480; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: 'Montserrat', sans-serif;">
+                        Reset View
+                    </button>
+                </div>
                 <div class="chart-wrapper">
                     <canvas id="trend-chart"></canvas>
+                </div>
+                <div style="margin-top: 12px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 0.85rem; color: #666; text-align: center;">
+                    💡 <strong>Tip:</strong> Drag chart to pan through history • Ctrl+Scroll to zoom • Pinch to zoom on mobile
                 </div>
             </div>
         </div>
@@ -1161,8 +1171,9 @@
         }
 
         function updateDashboard(data) {
-            // Store data globally for cancellation flow and rescan functionality
+            // Store data globally for cancellation flow, rescan functionality, and chart zoom
             window.currentCustomerData = data;
+            window.currentCustomerData.historical = data.historical || [];
 
             // Store customer_id globally for rescan functionality
             if (data.customer && data.customer.id) {
@@ -1519,6 +1530,26 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    modifierKey: 'ctrl'
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            },
+                            limits: {
+                                x: {min: 'original', max: 'original'}
+                            }
                         }
                     },
                     scales: {
@@ -1537,6 +1568,31 @@
                     }
                 }
             });
+
+            // If more than 20 data points, zoom to show last 20
+            if (historical.length > 20) {
+                const startIndex = Math.max(0, historical.length - 20);
+                trendChart.zoomScale('x', {min: startIndex, max: historical.length - 1}, 'default');
+
+                // Show reset button since we're starting zoomed
+                const resetBtn = document.getElementById('reset-zoom-btn');
+                if (resetBtn) resetBtn.style.display = 'block';
+            }
+        }
+
+        function resetChartZoom() {
+            if (trendChart) {
+                trendChart.resetZoom();
+
+                // Re-apply initial zoom to last 20 if needed
+                const historical = window.currentCustomerData?.historical || [];
+                if (historical.length > 20) {
+                    const startIndex = Math.max(0, historical.length - 20);
+                    setTimeout(() => {
+                        trendChart.zoomScale('x', {min: startIndex, max: historical.length - 1}, 'default');
+                    }, 100);
+                }
+            }
         }
 
         function updateTrendChartVisibility(customer) {
