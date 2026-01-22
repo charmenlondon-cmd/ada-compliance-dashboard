@@ -1,9 +1,4 @@
 {
   "version": 2,
-  "rewrites": [
-    {
-      "source": "/((?!api/|payment-success|payment-cancelled).*)",
-      "destination": "/index.html"
-    }
-  ]
+  "cleanUrls": true
 }
