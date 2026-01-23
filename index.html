@@ -1411,15 +1411,23 @@
                 if (!response.ok) {
                     const error = await response.json();
 
-                    // Determine authentication error scenario
+                    // Determine authentication error scenario based on context
                     if (response.status === 401 || response.status === 403) {
                         const errorMsg = (error.error || '').toLowerCase();
 
-                        if (errorMsg.includes('expired') || errorMsg.includes('token')) {
-                            showAuthError('session_expired');
-                        } else if (errorMsg.includes('invalid')) {
+                        // Context-aware error detection:
+                        // 1. If using token parameter (email link) → invalid_token
+                        // 2. If using session parameter (logged in session) → session_expired
+                        // 3. If no auth provided → auth_missing
+
+                        if (token) {
+                            // User clicked email link with expired/invalid token
                             showAuthError('invalid_token');
+                        } else if (window.authenticatedCustomerId || customerId) {
+                            // User had valid session that expired during use
+                            showAuthError('session_expired');
                         } else {
+                            // No authentication provided
                             showAuthError('auth_missing');
                         }
                         return;
@@ -1437,10 +1445,11 @@
                 // Check if it's an authentication error
                 const errorMsg = error.message.toLowerCase();
                 if (errorMsg.includes('authentication') || errorMsg.includes('token') || errorMsg.includes('customer_id')) {
-                    if (errorMsg.includes('expired')) {
-                        showAuthError('session_expired');
-                    } else if (errorMsg.includes('invalid')) {
+                    // Context-aware detection (same logic as above)
+                    if (token) {
                         showAuthError('invalid_token');
+                    } else if (window.authenticatedCustomerId || customerId) {
+                        showAuthError('session_expired');
                     } else {
                         showAuthError('auth_missing');
                     }
