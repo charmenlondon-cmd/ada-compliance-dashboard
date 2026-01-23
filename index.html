@@ -1481,14 +1481,33 @@
                 window.customerIdFromData = data.customer.id;
             }
 
+            // Check if user just completed payment and scan is pending
+            const pendingScanStart = localStorage.getItem('pendingScanStart');
+            const pendingScanTimestamp = pendingScanStart ? parseInt(pendingScanStart) : 0;
+            const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+            const isPendingScan = pendingScanTimestamp > tenMinutesAgo;
+
             // Check if scan is in progress
             const scanStatus = data.scan_summary?.status?.toLowerCase();
-            if (scanStatus === 'in_progress' || scanStatus === 'pending' || scanStatus === 'scanning') {
+            const isScanInProgress = scanStatus === 'in_progress' || scanStatus === 'pending' || scanStatus === 'scanning';
+
+            if (isScanInProgress) {
+                // Clear pending flag since scan has started
+                localStorage.removeItem('pendingScanStart');
                 showScanningOverlay();
                 // Auto-refresh every 30 seconds to check if scan completed
                 setTimeout(loadDashboard, 30000);
                 return; // Don't update dashboard with empty/incomplete data
+            } else if (isPendingScan) {
+                // Payment completed but scan not started yet in database
+                // Keep showing overlay and poll more frequently
+                showScanningOverlay();
+                // Auto-refresh every 10 seconds (faster polling while waiting for scan to start)
+                setTimeout(loadDashboard, 10000);
+                return; // Don't show old scan results
             } else {
+                // Clear any stale pending flag
+                localStorage.removeItem('pendingScanStart');
                 hideScanningOverlay();
             }
 
@@ -2318,6 +2337,9 @@
             // Check if it's a payment success message
             if (event.data.type === 'payment_success') {
                 console.log('✓ Payment successful! Customer:', event.data.customer_id);
+
+                // Set flag to track pending scan start (clears after 10 minutes)
+                localStorage.setItem('pendingScanStart', Date.now().toString());
 
                 // Show scanning overlay immediately
                 showScanningOverlay();
