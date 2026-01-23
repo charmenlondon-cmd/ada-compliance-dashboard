@@ -1368,9 +1368,8 @@
 
             } catch (error) {
                 console.error('Session validation error:', error);
-                // Don't redirect - just show error and continue
-                alert('Session validation failed: ' + error.message + '\n\nWill try to load dashboard anyway.');
-                return true; // Continue to load dashboard
+                // Let dashboard load attempt continue - auth error modal will handle display
+                return true; // Continue to load dashboard (will fail gracefully with modal)
             }
         }
 
