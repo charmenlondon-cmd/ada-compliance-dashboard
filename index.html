@@ -438,14 +438,20 @@
             transform: translateY(-1px);
         }
 
+        /* Menu Wrapper - Positioning Parent for Dropdown */
+        .menu-wrapper {
+            position: relative; /* Dropdown is positioned relative to this wrapper */
+        }
+
         /* Dropdown Menu Styles */
         .nav-dropdown {
             display: none;
             position: absolute;
-            top: calc(100% + 8px); /* 8px below the nav-container */
-            right: 10px; /* Align with right edge of nav-container (which has 40px padding) */
+            top: calc(100% + 8px); /* 8px below the menu button wrapper */
+            right: 0; /* Align to RIGHT EDGE of menu button */
+            left: auto; /* Defensive: prevent future media queries from introducing left */
             min-width: 200px;
-            max-width: 95vw; /* Prevent viewport overflow */
+            max-width: 95vw; /* Prevent viewport overflow on small screens */
             background: white;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -603,10 +609,9 @@
                 font-size: 20px;
             }
 
-            /* Mobile dropdown positioning */
+            /* Mobile dropdown - inherits right: 0 from parent rule */
             .nav-dropdown {
-                right: 0px; /* Align with nav-container edge (padding handled by parent) */
-                max-width: calc(100vw - 40px); /* Account for padding on both sides */
+                max-width: calc(100vw - 40px); /* Extra safety margin on small screens */
                 min-width: 160px;
             }
         }
@@ -960,13 +965,14 @@
                 <img src="/logo-text.png" alt="AI Labs" class="logo-text-img">
             </a>
 
-            <button id="menuButton" style="background: #007480; color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; width: 48px; height: 48px;">
-                <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
-                <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
-                <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
-            </button>
+            <div class="menu-wrapper">
+                <button id="menuButton" style="background: #007480; color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; width: 48px; height: 48px;">
+                    <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
+                    <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
+                    <span style="width: 24px; height: 3px; background: white; display: block; border-radius: 2px;"></span>
+                </button>
 
-            <div id="menuDropdown" class="nav-dropdown">
+                <div id="menuDropdown" class="nav-dropdown">
                 <div style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" onclick="window.location.href='https://bisonblu.com'">
                     Home
                 </div>
@@ -1015,6 +1021,7 @@
                 <div style="padding: 14px 20px; cursor: pointer;" onclick="logout()">
                     Logout
                 </div>
+            </div>
             </div>
         </div>
     </nav>
