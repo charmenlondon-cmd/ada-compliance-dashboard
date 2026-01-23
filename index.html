@@ -1419,8 +1419,6 @@
                         const hasCustomerId = urlParams.has('customer_id') || urlParams.has('id');
                         const hasSession = urlParams.has('session');
 
-                        console.log('Auth error debug:', { hasToken, hasCustomerId, hasSession, token, customerId, authenticatedCustomerId: window.authenticatedCustomerId });
-
                         // Context-aware error detection:
                         // 1. If using token parameter (email link) → invalid_token
                         // 2. If using session parameter (logged in session) → session_expired
@@ -1428,15 +1426,12 @@
 
                         if (hasToken || token) {
                             // User clicked email link with expired/invalid token
-                            console.log('→ Showing invalid_token modal');
                             showAuthError('invalid_token');
                         } else if (hasSession || window.authenticatedCustomerId || hasCustomerId || customerId) {
                             // User had valid session that expired during use
-                            console.log('→ Showing session_expired modal');
                             showAuthError('session_expired');
                         } else {
                             // No authentication provided
-                            console.log('→ Showing auth_missing modal');
                             showAuthError('auth_missing');
                         }
                         return;
@@ -1460,17 +1455,12 @@
                     const hasCustomerId = urlParams.has('customer_id') || urlParams.has('id');
                     const hasSession = urlParams.has('session');
 
-                    console.log('Auth error in catch block:', { hasToken, hasCustomerId, hasSession, token, customerId });
-
                     // Context-aware detection (same logic as above)
                     if (hasToken || token) {
-                        console.log('→ Showing invalid_token modal (catch)');
                         showAuthError('invalid_token');
                     } else if (hasSession || window.authenticatedCustomerId || hasCustomerId || customerId) {
-                        console.log('→ Showing session_expired modal (catch)');
                         showAuthError('session_expired');
                     } else {
-                        console.log('→ Showing auth_missing modal (catch)');
                         showAuthError('auth_missing');
                     }
                 } else if (errorMsg.includes('failed to fetch') || errorMsg.includes('network')) {
