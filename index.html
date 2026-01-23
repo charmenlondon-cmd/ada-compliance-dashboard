@@ -353,7 +353,7 @@
         .no-violations {
             text-align: center;
             padding: 40px;
-            color: #28a745;
+            color: #007480;
             font-size: 1.2rem;
         }
 
@@ -1433,7 +1433,7 @@
             } else if (totalViolations > 0) {
                 violationsGrid.innerHTML = '<div class="loading">Violation details are loading. Check summary counts above.</div>';
             } else {
-                violationsGrid.innerHTML = '<div class="no-violations">🎉 No violations found! Great job!</div>';
+                violationsGrid.innerHTML = '<div class="no-violations">No violations found</div>';
             }
 
             // Update recommendations
@@ -1540,7 +1540,7 @@
             const totalViolations = window.currentCustomerData?.scan_summary?.total_violations || 0;
 
             if (violations.length === 0 && totalViolations === 0) {
-                recommendationsList.innerHTML = '<li class="no-violations">🎉 No recommendations needed - your site is fully compliant!</li>';
+                recommendationsList.innerHTML = '<li class="no-violations">No recommendations needed - your site is fully compliant</li>';
                 return;
             } else if (violations.length === 0 && totalViolations > 0) {
                 recommendationsList.innerHTML = '<li class="loading">Recommendations are loading. Please check back shortly.</li>';
@@ -1741,7 +1741,7 @@
 
             // If no issues found
             if (!aiData.summary && (!aiData.priority_fixes || aiData.priority_fixes.length === 0) && (!aiData.visual_issues || aiData.visual_issues.length === 0) && (!aiData.content_issues || aiData.content_issues.length === 0)) {
-                html = '<div class="no-ai-analysis">🎉 No additional issues detected by AI analysis!</div>';
+                html = '<div class="no-ai-analysis">No additional issues detected by AI analysis</div>';
             }
 
             aiAnalysisContent.innerHTML = html;
