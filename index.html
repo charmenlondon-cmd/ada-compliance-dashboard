@@ -866,6 +866,76 @@
             border-top: 1px solid #f0f0f0;
         }
 
+        /* Authentication Error Modal Styles */
+        .auth-error-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .auth-error-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: slideInUp 0.4s ease;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-error-icon {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            opacity: 0.8;
+        }
+
+        .auth-error-content h2 {
+            color: #002059;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .auth-error-content p {
+            color: #666;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .auth-error-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .auth-error-buttons .btn {
+            min-width: 150px;
+        }
+
         @media (max-width: 768px) {
             .scanning-content {
                 max-width: 90%;
@@ -878,6 +948,22 @@
 
             .scanning-content p {
                 font-size: 0.9rem;
+            }
+
+            .auth-error-content {
+                padding: 36px 24px;
+            }
+
+            .auth-error-content h2 {
+                font-size: 1.4rem;
+            }
+
+            .auth-error-content p {
+                font-size: 0.95rem;
+            }
+
+            .auth-error-icon {
+                font-size: 3rem;
             }
         }
     </style>
@@ -953,6 +1039,18 @@
             </div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeGuestUpgradeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Error Modal -->
+    <div id="authErrorModal" class="auth-error-overlay" style="display: none;">
+        <div class="auth-error-content">
+            <div class="auth-error-icon">🔒</div>
+            <h2 id="authErrorTitle">Authentication Required</h2>
+            <p id="authErrorMessage">Unable to authenticate your session.</p>
+            <div class="auth-error-buttons" id="authErrorButtons">
+                <button class="btn btn-primary" onclick="window.location.href='https://bisonblu.com'">Return to Home</button>
             </div>
         </div>
     </div>
@@ -1313,6 +1411,21 @@
 
                 if (!response.ok) {
                     const error = await response.json();
+
+                    // Determine authentication error scenario
+                    if (response.status === 401 || response.status === 403) {
+                        const errorMsg = (error.error || '').toLowerCase();
+
+                        if (errorMsg.includes('expired') || errorMsg.includes('token')) {
+                            showAuthError('session_expired');
+                        } else if (errorMsg.includes('invalid')) {
+                            showAuthError('invalid_token');
+                        } else {
+                            showAuthError('auth_missing');
+                        }
+                        return;
+                    }
+
                     throw new Error(error.error || 'Failed to load data');
                 }
 
@@ -1321,7 +1434,22 @@
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                showError(error.message);
+
+                // Check if it's an authentication error
+                const errorMsg = error.message.toLowerCase();
+                if (errorMsg.includes('authentication') || errorMsg.includes('token') || errorMsg.includes('customer_id')) {
+                    if (errorMsg.includes('expired')) {
+                        showAuthError('session_expired');
+                    } else if (errorMsg.includes('invalid')) {
+                        showAuthError('invalid_token');
+                    } else {
+                        showAuthError('auth_missing');
+                    }
+                } else if (errorMsg.includes('failed to fetch') || errorMsg.includes('network')) {
+                    showAuthError('server_error');
+                } else {
+                    showError(error.message);
+                }
             }
         }
 
@@ -1923,6 +2051,56 @@
             document.getElementById('violations-grid').innerHTML = `<div class="error">${message}</div>`;
         }
 
+        function showAuthError(scenario = 'auth_missing') {
+            hideScanningOverlay();
+
+            // Stop auto-refresh to prevent repeated errors
+            clearInterval(window.autoRefreshInterval);
+
+            const modal = document.getElementById('authErrorModal');
+            const title = document.getElementById('authErrorTitle');
+            const message = document.getElementById('authErrorMessage');
+            const buttons = document.getElementById('authErrorButtons');
+            const icon = document.querySelector('.auth-error-icon');
+
+            // Configure modal based on scenario
+            const scenarios = {
+                session_expired: {
+                    icon: '⏱️',
+                    title: 'Session Expired',
+                    message: 'Your free scan session has expired. To view your results again, please request a new scan from our website.',
+                    buttons: '<button class="btn btn-primary" onclick="window.location.href=\'https://bisonblu.com\'">Return to Home</button>'
+                },
+                invalid_token: {
+                    icon: '🔒',
+                    title: 'Invalid Access Link',
+                    message: 'This access link is invalid or has already been used. Please request a new scan from our website.',
+                    buttons: '<button class="btn btn-primary" onclick="window.location.href=\'https://bisonblu.com\'">Return to Home</button>'
+                },
+                auth_missing: {
+                    icon: '🔑',
+                    title: 'Authentication Required',
+                    message: 'Authentication required. Please use the link from your email to access your results.',
+                    buttons: '<button class="btn btn-primary" onclick="window.location.href=\'https://bisonblu.com\'">Return to Home</button>'
+                },
+                server_error: {
+                    icon: '⚠️',
+                    title: 'Connection Error',
+                    message: 'We couldn\'t load your dashboard. This might be a temporary issue. Please try again.',
+                    buttons: '<button class="btn btn-secondary" onclick="location.reload()">Retry</button><button class="btn btn-primary" onclick="window.location.href=\'https://bisonblu.com\'">Return to Home</button>'
+                }
+            };
+
+            const config = scenarios[scenario] || scenarios.auth_missing;
+
+            icon.textContent = config.icon;
+            title.textContent = config.title;
+            message.textContent = config.message;
+            buttons.innerHTML = config.buttons;
+
+            modal.style.display = 'flex';
+        }
+
         async function requestRescan() {
             const { token, customerId } = getAuthFromURL();
             const btn = document.getElementById('scan-btn');
@@ -2245,8 +2423,8 @@
         // Load dashboard on page load
         document.addEventListener('DOMContentLoaded', loadDashboard);
 
-        // Auto-refresh every 5 minutes
-        setInterval(loadDashboard, 300000);
+        // Auto-refresh every 5 minutes (stored globally so it can be stopped on auth errors)
+        window.autoRefreshInterval = setInterval(loadDashboard, 300000);
     </script>
 </body>
 </html>
