@@ -1413,21 +1413,30 @@
 
                     // Determine authentication error scenario based on context
                     if (response.status === 401 || response.status === 403) {
-                        const errorMsg = (error.error || '').toLowerCase();
+                        // Check URL params directly for most reliable detection
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const hasToken = urlParams.has('token');
+                        const hasCustomerId = urlParams.has('customer_id') || urlParams.has('id');
+                        const hasSession = urlParams.has('session');
+
+                        console.log('Auth error debug:', { hasToken, hasCustomerId, hasSession, token, customerId, authenticatedCustomerId: window.authenticatedCustomerId });
 
                         // Context-aware error detection:
                         // 1. If using token parameter (email link) → invalid_token
                         // 2. If using session parameter (logged in session) → session_expired
                         // 3. If no auth provided → auth_missing
 
-                        if (token) {
+                        if (hasToken || token) {
                             // User clicked email link with expired/invalid token
+                            console.log('→ Showing invalid_token modal');
                             showAuthError('invalid_token');
-                        } else if (window.authenticatedCustomerId || customerId) {
+                        } else if (hasSession || window.authenticatedCustomerId || hasCustomerId || customerId) {
                             // User had valid session that expired during use
+                            console.log('→ Showing session_expired modal');
                             showAuthError('session_expired');
                         } else {
                             // No authentication provided
+                            console.log('→ Showing auth_missing modal');
                             showAuthError('auth_missing');
                         }
                         return;
@@ -1445,12 +1454,23 @@
                 // Check if it's an authentication error
                 const errorMsg = error.message.toLowerCase();
                 if (errorMsg.includes('authentication') || errorMsg.includes('token') || errorMsg.includes('customer_id')) {
+                    // Check URL params directly for most reliable detection
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const hasToken = urlParams.has('token');
+                    const hasCustomerId = urlParams.has('customer_id') || urlParams.has('id');
+                    const hasSession = urlParams.has('session');
+
+                    console.log('Auth error in catch block:', { hasToken, hasCustomerId, hasSession, token, customerId });
+
                     // Context-aware detection (same logic as above)
-                    if (token) {
+                    if (hasToken || token) {
+                        console.log('→ Showing invalid_token modal (catch)');
                         showAuthError('invalid_token');
-                    } else if (window.authenticatedCustomerId || customerId) {
+                    } else if (hasSession || window.authenticatedCustomerId || hasCustomerId || customerId) {
+                        console.log('→ Showing session_expired modal (catch)');
                         showAuthError('session_expired');
                     } else {
+                        console.log('→ Showing auth_missing modal (catch)');
                         showAuthError('auth_missing');
                     }
                 } else if (errorMsg.includes('failed to fetch') || errorMsg.includes('network')) {
