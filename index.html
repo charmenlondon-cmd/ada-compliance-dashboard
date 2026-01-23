@@ -999,15 +999,15 @@
                         <div id="websiteDisplay">Loading...</div>
                     </div>
 
-                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Billing coming soon')">
+                    <div id="billingMenuItem" style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Billing coming soon')">
                         Billing
                     </div>
 
-                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Change Password coming soon')">
+                    <div id="changePasswordMenuItem" style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Change Password coming soon')">
                         Change Password
                     </div>
 
-                    <div style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="startCancellation()">
+                    <div id="cancelSubscriptionMenuItem" style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="startCancellation()">
                         Cancel Subscription
                     </div>
 
@@ -1495,6 +1495,24 @@
                     ? website.substring(0, 30) + '...'
                     : website;
                 websiteDisplay.title = website; // Show full URL on hover
+            }
+
+            // Hide billing/subscription options for free customers
+            const plan = (customer.subscription?.plan || customer.plan || 'free').toLowerCase();
+            const isFree = (plan === 'free' || plan === 'guest');
+
+            const billingMenuItem = document.getElementById('billingMenuItem');
+            const changePasswordMenuItem = document.getElementById('changePasswordMenuItem');
+            const cancelSubscriptionMenuItem = document.getElementById('cancelSubscriptionMenuItem');
+
+            if (billingMenuItem) {
+                billingMenuItem.style.display = isFree ? 'none' : 'block';
+            }
+            if (changePasswordMenuItem) {
+                changePasswordMenuItem.style.display = isFree ? 'none' : 'block';
+            }
+            if (cancelSubscriptionMenuItem) {
+                cancelSubscriptionMenuItem.style.display = isFree ? 'none' : 'block';
             }
         }
 
