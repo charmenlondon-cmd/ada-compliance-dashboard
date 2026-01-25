@@ -231,6 +231,7 @@ module.exports = async function handler(req, res) {
         website_url: customerObj.website_url,
         plan: customerObj.plan,
         status: customerObj.status,
+        scan_status: customerObj.scan_status, // Scan status for overlay display
         stripe_id: customerObj.stripe_id, // Stripe customer ID for Billing Portal
         subscription: subscriptionObj, // Include subscription data
       },
