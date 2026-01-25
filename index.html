@@ -1667,22 +1667,23 @@
                 websiteDisplay.title = website; // Show full URL on hover
             }
 
-            // Hide billing/subscription options for non-subscription customers
+            // Hide billing/subscription options for free users only
+            // Guest, Essentials, and Professional users should see these options
             const plan = (customer.subscription?.plan || customer.plan || 'free').toLowerCase();
-            const isOneTimePlan = (plan === 'free' || plan === 'guest');  // One-time plans have no subscription to manage
+            const isFreePlan = plan === 'free';
 
             const billingMenuItem = document.getElementById('billingMenuItem');
             const changePasswordMenuItem = document.getElementById('changePasswordMenuItem');
             const cancelSubscriptionMenuItem = document.getElementById('cancelSubscriptionMenuItem');
 
             if (billingMenuItem) {
-                billingMenuItem.style.display = isOneTimePlan ? 'none' : 'block';
+                billingMenuItem.style.display = isFreePlan ? 'none' : 'block';
             }
             if (changePasswordMenuItem) {
-                changePasswordMenuItem.style.display = isOneTimePlan ? 'none' : 'block';
+                changePasswordMenuItem.style.display = isFreePlan ? 'none' : 'block';
             }
             if (cancelSubscriptionMenuItem) {
-                cancelSubscriptionMenuItem.style.display = isOneTimePlan ? 'none' : 'block';
+                cancelSubscriptionMenuItem.style.display = isFreePlan ? 'none' : 'block';
             }
         }
 
