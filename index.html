@@ -1095,7 +1095,7 @@
                         <div id="websiteDisplay">Loading...</div>
                     </div>
 
-                    <div id="billingMenuItem" style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="alert('Billing coming soon')">
+                    <div id="billingMenuItem" style="padding: 12px 20px 12px 40px; cursor: pointer; font-size: 14px;" onclick="openBillingPortal()">
                         Billing
                     </div>
 
@@ -1475,6 +1475,11 @@
             // Store customer_id globally for rescan functionality
             if (data.customer && data.customer.id) {
                 window.customerIdFromData = data.customer.id;
+            }
+
+            // Store stripe_id globally for Billing Portal
+            if (data.customer && data.customer.stripe_id) {
+                window.stripeCustomerId = data.customer.stripe_id;
             }
 
             // Check if user just completed payment and scan is pending
@@ -2332,6 +2337,46 @@
 
             // Redirect to pricing section (Wix forms not directly accessible externally)
             window.location.href = 'https://www.bisonblu.com/how-it-works#pricing';
+        }
+
+        // Open Stripe Billing Portal
+        async function openBillingPortal() {
+            const stripeId = window.stripeCustomerId;
+            const params = new URLSearchParams(window.location.search);
+            const sessionToken = params.get('session');
+
+            if (!stripeId) {
+                alert('Billing information not available. Please contact support.');
+                return;
+            }
+
+            if (!sessionToken) {
+                alert('Session expired. Please log in again.');
+                window.location.href = 'https://www.bisonblu.com/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('https://bisonblu.app.n8n.cloud/webhook/billing-portal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        stripe_id: stripeId,
+                        session_token: sessionToken
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.portal_url) {
+                    window.location.href = data.portal_url;
+                } else {
+                    throw new Error(data.error || 'Failed to open billing portal');
+                }
+            } catch (error) {
+                console.error('Billing portal error:', error);
+                alert('Unable to open billing portal. Please try again or contact support.');
+            }
         }
 
         // Listen for payment success message from payment-success.html
