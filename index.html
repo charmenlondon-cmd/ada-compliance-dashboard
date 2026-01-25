@@ -2307,16 +2307,8 @@
                     // Close the modal
                     closeGuestUpgradeModal();
 
-                    // Open Stripe checkout in new window
-                    const stripeWindow = window.open(data.checkout_url, '_blank', 'width=800,height=800');
-
-                    if (!stripeWindow) {
-                        alert('Please allow popups to complete your purchase.');
-                        return;
-                    }
-
-                    // Show message that payment window opened
-                    alert('Payment window opened. Complete your payment and this dashboard will update automatically.');
+                    // Redirect to Stripe checkout (more reliable than popup)
+                    window.location.href = data.checkout_url;
                 } else {
                     throw new Error(data.message || 'Failed to create checkout session');
                 }
