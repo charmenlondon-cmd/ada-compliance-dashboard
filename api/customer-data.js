@@ -37,10 +37,10 @@ module.exports = async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // Fetch customer data from Customers sheet (up to Column P for session_token)
+    // Fetch customer data from Customers sheet (up to Column S for scan_status)
     const customerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Customers!A:P',
+      range: 'Customers!A:S',
     });
 
     const customerRows = customerResponse.data.values || [];
@@ -62,8 +62,7 @@ module.exports = async function handler(req, res) {
     }
 
     // Map customer data to object
-    // Customers sheet has NOT changed - this mapping is still correct
-    // Columns: A=customer_id, B=name, C=surname, D=email, E=company_name, F=website_url, G=plan, H=scan_frequency, I=created_date, J=last_scan_date, K=current_score, L=status, M=pages_to_scan, N=token, O=password_hash, P=session_token
+    // Columns: A=customer_id, B=name, C=surname, D=email, E=company_name, F=website_url, G=plan, H=scan_frequency, I=created_date, J=last_scan_date, K=current_score, L=status, M=pages_to_scan, N=token, O=password_hash, P=session_token, Q=reset_token, R=reset_token_expires, S=scan_status
     const customerObj = {
       customer_id: customer[0],  // Column A
       email: customer[3],        // Column D
@@ -75,6 +74,7 @@ module.exports = async function handler(req, res) {
       last_scan_date: customer[9], // Column J
       current_score: customer[10], // Column K
       status: customer[11],      // Column L
+      scan_status: customer[18], // Column S
     };
 
     // Store the customer_id for filtering scans (works for both token and customer_id auth)

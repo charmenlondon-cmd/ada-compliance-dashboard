@@ -1487,8 +1487,8 @@
             const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
             const isPendingScan = pendingScanTimestamp > tenMinutesAgo;
 
-            // Check scan status
-            const scanStatus = data.scan_summary?.status?.toLowerCase();
+            // Check scan status from Customers sheet (Column S: scan_status)
+            const scanStatus = data.customer?.scan_status?.toLowerCase();
             const isScanComplete = scanStatus === 'complete' || scanStatus === 'completed';
             const isScanInProgress = scanStatus === 'in_progress' || scanStatus === 'pending' || scanStatus === 'scanning';
 
