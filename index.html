@@ -1662,22 +1662,22 @@
                 websiteDisplay.title = website; // Show full URL on hover
             }
 
-            // Hide billing/subscription options for free customers
+            // Hide billing/subscription options for non-subscription customers
             const plan = (customer.subscription?.plan || customer.plan || 'free').toLowerCase();
-            const isFree = (plan === 'free' || plan === 'guest');
+            const isOneTimePlan = (plan === 'free' || plan === 'guest');  // One-time plans have no subscription to manage
 
             const billingMenuItem = document.getElementById('billingMenuItem');
             const changePasswordMenuItem = document.getElementById('changePasswordMenuItem');
             const cancelSubscriptionMenuItem = document.getElementById('cancelSubscriptionMenuItem');
 
             if (billingMenuItem) {
-                billingMenuItem.style.display = isFree ? 'none' : 'block';
+                billingMenuItem.style.display = isOneTimePlan ? 'none' : 'block';
             }
             if (changePasswordMenuItem) {
-                changePasswordMenuItem.style.display = isFree ? 'none' : 'block';
+                changePasswordMenuItem.style.display = isOneTimePlan ? 'none' : 'block';
             }
             if (cancelSubscriptionMenuItem) {
-                cancelSubscriptionMenuItem.style.display = isFree ? 'none' : 'block';
+                cancelSubscriptionMenuItem.style.display = isOneTimePlan ? 'none' : 'block';
             }
         }
 
@@ -2057,9 +2057,9 @@
 
             const plan = customer.plan.toLowerCase();
 
-            // Hide trend chart for free and guest users (one-off scans)
-            // Show for all paid plans (essentials, professional, starter, pro, etc.)
-            if (plan === 'free' || plan === 'guest') {
+            // Hide trend chart for one-time scan plans (no historical data to show)
+            // Show for subscription plans (essentials, professional) which have recurring scans
+            if (plan === 'free' || plan === 'guest') {  // One-time scans - no trend data
                 trendChartCard.style.display = 'none';
             } else {
                 trendChartCard.style.display = 'block';
@@ -2323,8 +2323,8 @@
             // Close the modal
             closeGuestUpgradeModal();
 
-            // Redirect to Wix essentials signup form with query parameter to open lightbox
-            window.location.href = 'https://www.bisonblu.com/how-it-works?openEssentials_Sign_Up=true';
+            // Redirect to pricing section (Wix forms not directly accessible externally)
+            window.location.href = 'https://www.bisonblu.com/how-it-works#pricing';
         }
 
         // Listen for payment success message from payment-success.html
@@ -2354,8 +2354,8 @@
             const userPlan = window.currentCustomerData?.customer?.plan || 'free';
             const scanBtn = document.getElementById('scan-btn');
 
-            // Show button for free/guest (to encourage upgrades)
-            // Hide for essentials/professional (they have other scan methods)
+            // Show scan button for one-time plans (free/guest) to allow purchasing additional scans
+            // Hide for subscription plans (essentials/professional) which have automated recurring scans
             if (userPlan === 'essentials' || userPlan === 'professional') {
                 scanBtn.style.display = 'none';
             } else {
