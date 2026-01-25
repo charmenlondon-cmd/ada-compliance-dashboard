@@ -1487,12 +1487,17 @@
             const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
             const isPendingScan = pendingScanTimestamp > tenMinutesAgo;
 
-            // Check if scan is in progress
+            // Check scan status
             const scanStatus = data.scan_summary?.status?.toLowerCase();
+            const isScanComplete = scanStatus === 'complete' || scanStatus === 'completed';
             const isScanInProgress = scanStatus === 'in_progress' || scanStatus === 'pending' || scanStatus === 'scanning';
 
-            if (isScanInProgress) {
-                // Clear pending flag since scan has started
+            if (isScanComplete) {
+                // Scan finished - clear flag and hide overlay
+                localStorage.removeItem('pendingScanStart');
+                hideScanningOverlay();
+            } else if (isScanInProgress) {
+                // Scan running - clear pending flag, show overlay, poll
                 localStorage.removeItem('pendingScanStart');
                 showScanningOverlay();
                 // Auto-refresh every 30 seconds to check if scan completed
