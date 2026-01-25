@@ -1683,7 +1683,9 @@
                 changePasswordMenuItem.style.display = isFreePlan ? 'none' : 'block';
             }
             if (cancelSubscriptionMenuItem) {
-                cancelSubscriptionMenuItem.style.display = isFreePlan ? 'none' : 'block';
+                // Hide for free and guest (no subscription to cancel)
+                const hasNoSubscription = plan === 'free' || plan === 'guest';
+                cancelSubscriptionMenuItem.style.display = hasNoSubscription ? 'none' : 'block';
             }
         }
 
