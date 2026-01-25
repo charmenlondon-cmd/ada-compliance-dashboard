@@ -2335,8 +2335,11 @@
             // Close the modal
             closeGuestUpgradeModal();
 
-            // Redirect to pricing section (Wix forms not directly accessible externally)
-            window.location.href = 'https://www.bisonblu.com/how-it-works#pricing';
+            // Open email client with pre-filled upgrade request
+            const customerEmail = window.authenticatedEmail || '';
+            const customerId = window.customerIdFromData || '';
+            const body = `Hi Bison Blu team,%0D%0A%0D%0AI would like to upgrade my account from Guest to Essentials.%0D%0A%0D%0ACustomer ID: ${customerId}%0D%0AEmail: ${customerEmail}%0D%0A%0D%0AThank you.`;
+            window.location.href = `mailto:info@bisonblu.com?subject=Upgrade from Guest to Essentials&body=${body}`;
         }
 
         // Open Stripe Billing Portal
