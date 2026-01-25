@@ -1071,13 +1071,11 @@
                 </button>
 
                 <div id="menuDropdown" class="nav-dropdown">
-                <div style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" onclick="window.location.href='https://bisonblu.com'">
+                <div style="padding: 12px 20px; cursor: pointer;" onclick="window.location.href='https://bisonblu.com'">
                     Home
                 </div>
 
-                <div style="height: 1px; background: #e0e0e0; margin: 8px 0;"></div>
-
-                <div id="accountSection" style="padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0;">
+                <div id="accountSection" style="padding: 12px 20px; cursor: pointer;">
                     My Account <span id="accountArrow">▼</span>
                 </div>
 
@@ -1114,9 +1112,7 @@
                     </div>
                 </div>
 
-                <div style="height: 1px; background: #e0e0e0; margin: 8px 0;"></div>
-
-                <div style="padding: 14px 20px; cursor: pointer;" onclick="logout()">
+                <div style="padding: 12px 20px; cursor: pointer;" onclick="logout()">
                     Logout
                 </div>
             </div>
@@ -2283,18 +2279,29 @@
             const { token, customerId } = getAuthFromURL();
             const actualCustomerId = customerId || window.customerIdFromData;
 
+            // Get current session token from URL for return redirect
+            const params = new URLSearchParams(window.location.search);
+            const sessionToken = params.get('session');
+
             if (!actualCustomerId) {
                 alert('Unable to identify customer. Please refresh and try again.');
                 return;
             }
 
+            if (!sessionToken) {
+                alert('Session expired. Please log in again.');
+                window.location.href = 'https://www.bisonblu.com/login';
+                return;
+            }
+
             try {
-                // Call repeat_purchase n8n workflow
+                // Call repeat_purchase n8n workflow with session token for return redirect
                 const response = await fetch('https://bisonblu.app.n8n.cloud/webhook/repeat_purchase', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        customer_id: actualCustomerId
+                        customer_id: actualCustomerId,
+                        session_token: sessionToken
                     })
                 });
 
