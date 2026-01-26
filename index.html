@@ -1423,8 +1423,11 @@
                         if (hasToken || token) {
                             // User clicked email link with expired/invalid token
                             showAuthError('invalid_token');
-                        } else if (hasSession || window.authenticatedCustomerId || hasCustomerId || customerId) {
-                            // User had valid session that expired during use
+                        } else if (hasSession) {
+                            // Paid user session expired (logged in via password)
+                            showAuthError('session_expired_paid');
+                        } else if (window.authenticatedCustomerId || hasCustomerId || customerId) {
+                            // Free user session expired (accessed via magic link)
                             showAuthError('session_expired');
                         } else {
                             // No authentication provided
@@ -1454,7 +1457,9 @@
                     // Context-aware detection (same logic as above)
                     if (hasToken || token) {
                         showAuthError('invalid_token');
-                    } else if (hasSession || window.authenticatedCustomerId || hasCustomerId || customerId) {
+                    } else if (hasSession) {
+                        showAuthError('session_expired_paid');
+                    } else if (window.authenticatedCustomerId || hasCustomerId || customerId) {
                         showAuthError('session_expired');
                     } else {
                         showAuthError('auth_missing');
@@ -2116,6 +2121,12 @@
                     title: 'Session Expired',
                     message: 'Your free scan session has expired. To view your results again, please request a new scan from our website.',
                     buttons: '<button class="btn btn-primary" onclick="window.location.href=\'https://bisonblu.com\'">Return to Home</button>'
+                },
+                session_expired_paid: {
+                    icon: '🔐',
+                    title: 'Session Expired',
+                    message: 'For your security, your session has expired. Please sign in again to access your dashboard.',
+                    buttons: '<button class="btn btn-primary" onclick="window.location.href=\'https://bisonblu.com/signin\'">Sign In</button>'
                 },
                 invalid_token: {
                     icon: '🔒',
