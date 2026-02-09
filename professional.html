@@ -914,7 +914,7 @@
 
         // Get token from URL
         const urlParams = new URLSearchParams(window.location.search);
-        currentToken = urlParams.get('token');
+        currentToken = urlParams.get('session');
 
         if (!currentToken) {
             showError('No authentication token provided. Please log in again.');
