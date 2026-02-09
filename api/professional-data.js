@@ -45,8 +45,8 @@ module.exports = async function handler(req, res) {
     const customerRows = customerResponse.data.values || [];
     const customerData = customerRows.slice(1);
 
-    // Find customer by token (Column N, index 13)
-    const customer = customerData.find(row => row[13] === token);
+    // Find customer by session_token (Column P, index 15)
+    const customer = customerData.find(row => row[15] === token);
 
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
