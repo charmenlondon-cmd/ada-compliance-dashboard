@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Dashboard - ADA Compliance Scanner - Bison Blu AI Labs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .top-nav.hidden {
+            transform: translateY(-100%);
+        }
+
+        .nav-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 114px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            height: 106px;
+            width: auto;
+        }
+
+        .logo-text-img {
+            height: 35px;
+            width: auto;
+            margin-left: 10px;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            padding-top: 144px;
+        }
+
+        .header {
+            text-align: center;
+            color: #002059;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #606887;
+            font-size: 1.1rem;
+        }
+
+        #company-name {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #002059;
+            margin-top: 8px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Website Selector Card - NEW */
+        .website-selector-card {
+            grid-column: 1 / -1;
+        }
+
+        .website-selector-card h2 {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #website-dropdown {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        #website-dropdown:hover {
+            border-color: #007480;
+        }
+
+        #website-dropdown:focus {
+            outline: none;
+            border-color: #007480;
+            box-shadow: 0 0 0 3px rgba(0, 116, 128, 0.1);
+        }
+
+        .selected-url-display {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #666;
+            word-break: break-all;
+        }
+
+        #current-url {
+            color: #007480;
+            font-weight: 600;
+        }
+
+        /* Combined Score + Date Card - NEW */
+        .score-date-card {
+            grid-column: span 2;
+        }
+
+        .split-box {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .score-section {
+            flex: 1;
+            text-align: center;
+            padding-right: 20px;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .score-section h2 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .date-section {
+            flex: 1;
+            text-align: center;
+        }
+
+        .date-section h2 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .score-number {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .scan-date {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-date .date-value {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .scan-date .time-value {
+            display: block;
+            font-size: 1rem;
+            color: #606887;
+        }
+
+        .customer-info {
+            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+            flex-grow: 1;
+            min-height: 80px;
+        }
+
+        .customer-info strong {
+            color: #007480;
+            font-weight: 700;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.4s ease, color 0.4s ease, transform 0.2s;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-width: 200px;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: #007480;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 2px 8px rgba(0, 116, 128, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e2e2;
+        }
+
+        .violations-section {
+            grid-column: 1 / -1;
+        }
+
+        .violations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .violation-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #ccc;
+        }
+
+        .violation-card.critical {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .violation-card.serious {
+            border-left-color: #fd7e14;
+            background: #fff8f0;
+        }
+
+        .violation-card.moderate {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .violation-card.minor {
+            border-left-color: #17a2b8;
+            background: #f0f9ff;
+        }
+
+        .violation-card h4 {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .violation-card p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .violation-card small {
+            display: block;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .violation-card a {
+            color: #007480;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .violation-card a:hover {
+            text-decoration: underline;
+        }
+
+        .chart-container {
+            grid-column: 1 / -1;
+        }
+
+        .chart-wrapper {
+            height: 300px;
+            margin-top: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+
+        .violation-counts {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .count-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .count-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .count-badge.active {
+            border: 2px solid #333;
+            box-shadow: 0 0 0 3px rgba(0, 116, 128, 0.2);
+        }
+
+        .count-badge.all {
+            background: #007480;
+            color: white;
+        }
+
+        .count-badge.all.active {
+            border: 2px solid #333;
+        }
+
+        .count-badge.critical {
+            background: #dc3545;
+            color: white;
+        }
+
+        .count-badge.serious {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .count-badge.moderate {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .count-badge.minor {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .no-violations {
+            text-align: center;
+            padding: 40px;
+            color: #007480;
+            font-size: 1.2rem;
+        }
+
+        /* Comparison Modal Styles - NEW */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content.large {
+            max-width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .site-checkboxes {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .site-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .site-checkbox:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .site-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .site-checkbox span {
+            font-size: 0.95rem;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-column {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .column-header h3 {
+            font-size: 0.9rem;
+            color: #002059;
+            margin-bottom: 20px;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric-row.score-row {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-bottom: none;
+        }
+
+        .metric-row.score-row .metric-value {
+            font-size: 2.5rem !important;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: #606887;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #002059;
+        }
+
+        .metric-row.critical .metric-value { color: #dc3545; }
+        .metric-row.serious .metric-value { color: #fd7e14; }
+        .metric-row.moderate .metric-value { color: #ffc107; }
+        .metric-row.minor .metric-value { color: #17a2b8; }
+
+        .comparison-chart-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .trend-label {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Scanned Pages Modal */
+        .scanned-pages-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .page-item {
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            transition: background 0.2s ease;
+            word-break: break-all;
+        }
+
+        .page-item:hover {
+            background: #f0f0f0;
+        }
+
+        .page-item a {
+            color: #007480;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .page-item a:hover {
+            text-decoration: underline;
+        }
+
+        .pages-count {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .no-pages-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            #company-name {
+                font-size: 1.5rem;
+            }
+
+            .score-number {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding-top: 120px;
+            }
+
+            .nav-container {
+                padding: 0 20px;
+                height: 90px;
+            }
+
+            .logo-icon {
+                height: 80px;
+            }
+
+            .logo-text-img {
+                height: 26px;
+            }
+
+            .split-box {
+                flex-direction: column;
+            }
+
+            .score-section {
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+                padding-right: 0;
+                padding-bottom: 20px;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-date-card {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scanned Pages Modal -->
+    <div id="scannedPagesModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeScannedPagesModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Scanned Pages</h2>
+            </div>
+            <div class="modal-body">
+                <p class="pages-count" id="pages-count"></p>
+                <div class="scanned-pages-list" id="scanned-pages-list">
+                    <!-- Page URLs will be populated here by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="closeScannedPagesModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal - NEW -->
+    <div id="comparison-modal" class="modal">
+        <div class="modal-content large">
+            <button class="modal-close" onclick="closeComparisonModal()">&times;</button>
+
+            <!-- Step 1: Site Selection -->
+            <div id="site-selection-step">
+                <h2 style="color: #002059; margin-bottom: 10px;">Select Sites to Compare</h2>
+                <p style="color: #666; margin-bottom: 20px;">Choose 2-5 websites to compare side-by-side</p>
+
+                <div class="site-checkboxes" id="site-checkboxes">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <button class="btn btn-primary" id="compare-btn" onclick="showComparison()" disabled>
+                    Compare Selected Sites
+                </button>
+            </div>
+
+            <!-- Step 2: Comparison View -->
+            <div id="comparison-view" style="display:none;">
+                <h2 style="color: #002059; margin-bottom: 20px;">Site Comparison</h2>
+                <div class="comparison-grid" id="comparison-grid">
+                    <!-- Populated dynamically with columns -->
+                </div>
+                <button class="btn btn-secondary" onclick="backToSelection()">← Back to Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="https://bisonblu.com" class="logo">
+                <img src="/logo-icon.png" alt="Bison Blu" class="logo-icon">
+                <img src="/logo-text.png" alt="AI Labs" class="logo-text-img">
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="header">
+            <h1>Professional Dashboard</h1>
+            <p>Multi-Site ADA Compliance Management</p>
+            <div id="company-name"></div>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Loading your dashboard...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="dashboard-content" style="display: none;">
+            <div class="dashboard-grid">
+                <!-- Website Selector Card - NEW -->
+                <div class="card website-selector-card">
+                    <h2>Selected Website</h2>
+                    <select id="website-dropdown" onchange="switchWebsite(this.value)">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <div class="selected-url-display">
+                        Currently viewing: <span id="current-url"></span>
+                    </div>
+                </div>
+
+                <!-- Combined Score + Date Card - NEW -->
+                <div class="card score-date-card">
+                    <div class="split-box">
+                        <!-- Left side: Compliance Score -->
+                        <div class="score-section">
+                            <h2>Compliance Score</h2>
+                            <div class="score-circle" id="score-display">
+                                <span class="score-number">0</span>
+                                <span class="score-label">%</span>
+                            </div>
+                        </div>
+
+                        <!-- Right side: Last Scan Date -->
+                        <div class="date-section">
+                            <h2>Last Scan</h2>
+                            <div class="scan-date" id="last-scan-date">
+                                <span class="date-value">—</span>
+                                <span class="time-value">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Details Card -->
+                <div class="card">
+                    <h2>Account Details</h2>
+                    <div class="customer-info" id="customer-info">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Actions Card -->
+                <div class="card">
+                    <h2>Actions</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="viewScannedPages()">View Scanned Pages</button>
+                        <button class="btn btn-primary" onclick="openComparisonModal()">Compare Multiple Sites</button>
+                    </div>
+                </div>
+
+                <!-- Violations Section -->
+                <div class="card violations-section">
+                    <h2>Accessibility Violations</h2>
+                    <div class="violation-counts" id="violation-counts">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="violations-grid" id="violations-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Historical Chart -->
+                <div class="card chart-container">
+                    <h2>Compliance Trend</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="compliance-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let allSitesData = {};
+        let currentSiteUrl = null;
+        let currentToken = null;
+        let allViolations = [];
+        let complianceChart = null;
+
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        currentToken = urlParams.get('token');
+
+        if (!currentToken) {
+            showError('No authentication token provided. Please log in again.');
+        } else {
+            loadProfessionalDashboard(currentToken);
+        }
+
+        // Load professional dashboard data
+        async function loadProfessionalDashboard(token) {
+            try {
+                const response = await fetch(`/api/professional-data?token=${token}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+
+                const data = await response.json();
+
+                // Store all sites data
+                allSitesData = {};
+                data.websites.forEach(site => {
+                    allSitesData[site.website_url] = site;
+                });
+
+                // Get URLs array
+                const urls = Object.keys(allSitesData);
+
+                if (urls.length === 0) {
+                    showError('No websites configured for your account.');
+                    return;
+                }
+
+                // Set first URL as default
+                currentSiteUrl = urls[0];
+
+                // Display customer info
+                displayCustomerInfo(data.customer);
+
+                // Populate dropdown
+                populateWebsiteDropdown(urls);
+
+                // Display first site's data
+                displaySiteData(currentSiteUrl);
+
+                // Hide loading, show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showError('Failed to load dashboard data. Please try again later.');
+            }
+        }
+
+        // Populate website dropdown
+        function populateWebsiteDropdown(urls) {
+            const dropdown = document.getElementById('website-dropdown');
+            dropdown.innerHTML = urls.map(url =>
+                `<option value="${url}">${url}</option>`
+            ).join('');
+        }
+
+        // Switch website
+        function switchWebsite(selectedUrl) {
+            currentSiteUrl = selectedUrl;
+            displaySiteData(selectedUrl);
+        }
+
+        // Display site data
+        function displaySiteData(url) {
+            const site = allSitesData[url];
+
+            // Update current URL display
+            document.getElementById('current-url').textContent = url;
+
+            // Update compliance score
+            updateComplianceScore(site.current_score || 0);
+
+            // Update last scan date
+            updateLastScanDate(site.last_scan_date);
+
+            // Update violations
+            allViolations = site.violations || [];
+            updateViolations(allViolations);
+
+            // Update historical chart
+            updateHistoricalChart(site.historical || []);
+        }
+
+        // Display customer info
+        function displayCustomerInfo(customer) {
+            document.getElementById('company-name').textContent = customer.company_name || '';
+            document.getElementById('customer-info').innerHTML = `
+                <div><strong>Email:</strong> ${customer.email}</div>
+                <div><strong>Plan:</strong> Professional</div>
+                <div><strong>Status:</strong> ${customer.status || 'Active'}</div>
+            `;
+        }
+
+        // Update compliance score
+        function updateComplianceScore(score) {
+            document.querySelector('.score-number').textContent = score;
+
+            // Update circle color based on score
+            const circle = document.querySelector('.score-circle');
+            if (score >= 90) {
+                circle.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+            } else if (score >= 70) {
+                circle.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            } else {
+                circle.style.background = 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
+            }
+        }
+
+        // Update last scan date
+        function updateLastScanDate(dateString) {
+            if (!dateString) {
+                document.querySelector('.date-value').textContent = '—';
+                document.querySelector('.time-value').textContent = '—';
+                return;
+            }
+
+            const date = new Date(dateString);
+            const dateValue = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeValue = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+            document.querySelector('.date-value').textContent = dateValue;
+            document.querySelector('.time-value').textContent = timeValue;
+        }
+
+        // Update violations
+        function updateViolations(violations) {
+            const counts = {
+                critical: violations.filter(v => v.impact === 'critical').length,
+                serious: violations.filter(v => v.impact === 'serious').length,
+                moderate: violations.filter(v => v.impact === 'moderate').length,
+                minor: violations.filter(v => v.impact === 'minor').length
+            };
+
+            const countsHtml = `
+                <div class="count-badge all active" onclick="filterViolations('all')">
+                    All (${violations.length})
+                </div>
+                <div class="count-badge critical" onclick="filterViolations('critical')">
+                    Critical (${counts.critical})
+                </div>
+                <div class="count-badge serious" onclick="filterViolations('serious')">
+                    Serious (${counts.serious})
+                </div>
+                <div class="count-badge moderate" onclick="filterViolations('moderate')">
+                    Moderate (${counts.moderate})
+                </div>
+                <div class="count-badge minor" onclick="filterViolations('minor')">
+                    Minor (${counts.minor})
+                </div>
+            `;
+
+            document.getElementById('violation-counts').innerHTML = countsHtml;
+            displayViolations(violations);
+        }
+
+        // Display violations
+        function displayViolations(violations) {
+            const grid = document.getElementById('violations-grid');
+
+            if (violations.length === 0) {
+                grid.innerHTML = '<div class="no-violations">No violations found</div>';
+                return;
+            }
+
+            grid.innerHTML = violations.map(v => `
+                <div class="violation-card ${v.impact}">
+                    <h4>${v.rule_id}</h4>
+                    <p>${v.description}</p>
+                    <small>Impact: ${v.impact}</small>
+                    <small>Element: ${v.element_selector || 'N/A'}</small>
+                    <a href="${v.help_url}" target="_blank">Learn more →</a>
+                </div>
+            `).join('');
+        }
+
+        // Filter violations
+        function filterViolations(type) {
+            // Update active badge
+            document.querySelectorAll('.count-badge').forEach(badge => {
+                badge.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Filter violations
+            let filtered = allViolations;
+            if (type !== 'all') {
+                filtered = allViolations.filter(v => v.impact === type);
+            }
+
+            displayViolations(filtered);
+        }
+
+        // Update historical chart
+        function updateHistoricalChart(historical) {
+            const ctx = document.getElementById('compliance-chart');
+
+            if (complianceChart) {
+                complianceChart.destroy();
+            }
+
+            if (historical.length === 0) {
+                ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+                return;
+            }
+
+            complianceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: historical.map(s => formatDate(s.date)),
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: historical.map(s => s.score),
+                        borderColor: '#007480',
+                        backgroundColor: 'rgba(0, 116, 128, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // View scanned pages
+        function viewScannedPages() {
+            const site = allSitesData[currentSiteUrl];
+            const pages = site.latest_scan?.scanned_page_urls || [];
+
+            const modal = document.getElementById('scannedPagesModal');
+            const list = document.getElementById('scanned-pages-list');
+            const count = document.getElementById('pages-count');
+
+            if (pages.length === 0) {
+                list.innerHTML = '<div class="no-pages-message">No pages scanned yet</div>';
+                count.textContent = '';
+            } else {
+                count.textContent = `Total pages scanned: ${pages.length}`;
+                list.innerHTML = pages.map(page => `
+                    <div class="page-item">
+                        <a href="${page}" target="_blank">${page}</a>
+                    </div>
+                `).join('');
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeScannedPagesModal() {
+            document.getElementById('scannedPagesModal').classList.remove('show');
+        }
+
+        // Comparison modal functions
+        function openComparisonModal() {
+            const urls = Object.keys(allSitesData);
+            const checkboxesHtml = urls.map(url => `
+                <label class="site-checkbox">
+                    <input type="checkbox" value="${url}" onchange="validateSelection()">
+                    <span>${url}</span>
+                </label>
+            `).join('');
+
+            document.getElementById('site-checkboxes').innerHTML = checkboxesHtml;
+            document.getElementById('comparison-modal').classList.add('show');
+            document.getElementById('site-selection-step').style.display = 'block';
+            document.getElementById('comparison-view').style.display = 'none';
+        }
+
+        function closeComparisonModal() {
+            document.getElementById('comparison-modal').classList.remove('show');
+        }
+
+        function validateSelection() {
+            const checked = document.querySelectorAll('#site-checkboxes input:checked');
+            const compareBtn = document.getElementById('compare-btn');
+
+            compareBtn.disabled = checked.length < 2 || checked.length > 5;
+        }
+
+        function showComparison() {
+            const checked = document.querySelectorAll('#site-checkboxes input:checked');
+            const selectedUrls = Array.from(checked).map(cb => cb.value);
+
+            // Build comparison columns
+            const grid = document.getElementById('comparison-grid');
+            grid.innerHTML = selectedUrls.map((url, index) => buildComparisonColumn(url, index)).join('');
+
+            // Switch views
+            document.getElementById('site-selection-step').style.display = 'none';
+            document.getElementById('comparison-view').style.display = 'block';
+
+            // Render charts for each column
+            selectedUrls.forEach((url, index) => {
+                renderComparisonChart(url, `comparison-chart-${index}`);
+            });
+        }
+
+        function backToSelection() {
+            document.getElementById('comparison-view').style.display = 'none';
+            document.getElementById('site-selection-step').style.display = 'block';
+        }
+
+        function buildComparisonColumn(url, index) {
+            const site = allSitesData[url];
+            const scan = site.latest_scan || {};
+            const trendColor = calculateTrendColor(site.historical);
+
+            return `
+                <div class="comparison-column">
+                    <div class="column-header">
+                        <h3>${url}</h3>
+                    </div>
+
+                    <div class="metric-row score-row">
+                        <div class="metric-label">Compliance Score</div>
+                        <div class="metric-value large">${site.current_score || 0}%</div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label">Last Scan Date</div>
+                        <div class="metric-value">${formatDate(site.last_scan_date)}</div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label">Total Violations</div>
+                        <div class="metric-value">${scan.total_violations || 0}</div>
+                    </div>
+
+                    <div class="metric-row critical">
+                        <div class="metric-label">Critical</div>
+                        <div class="metric-value">${scan.critical_count || 0}</div>
+                    </div>
+
+                    <div class="metric-row serious">
+                        <div class="metric-label">Serious</div>
+                        <div class="metric-value">${scan.serious_count || 0}</div>
+                    </div>
+
+                    <div class="metric-row moderate">
+                        <div class="metric-label">Moderate</div>
+                        <div class="metric-value">${scan.moderate_count || 0}</div>
+                    </div>
+
+                    <div class="metric-row minor">
+                        <div class="metric-label">Minor</div>
+                        <div class="metric-value">${scan.minor_count || 0}</div>
+                    </div>
+
+                    <div class="comparison-chart-container" style="border: 3px solid ${trendColor};">
+                        <canvas id="comparison-chart-${index}"></canvas>
+                        <div class="trend-label" style="color: ${trendColor};">${getTrendLabel(trendColor)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderComparisonChart(url, canvasId) {
+            const site = allSitesData[url];
+            const last10 = (site.historical || []).slice(-10);
+
+            if (last10.length === 0) return;
+
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last10.map(s => formatDate(s.date)),
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: last10.map(s => s.score),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Last 10 Scans',
+                            font: { size: 12 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate trend color
+        function calculateTrendColor(historical) {
+            if (!historical || historical.length < 10) {
+                return '#F59E0B'; // Orange - not enough data
+            }
+
+            const last10 = historical.slice(-10);
+            const violations = last10.map(scan => 100 - scan.score);
+
+            const firstHalf = violations.slice(0, 5);
+            const secondHalf = violations.slice(5, 10);
+
+            const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / 5;
+            const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / 5;
+
+            const change = ((secondAvg - firstAvg) / firstAvg) * 100;
+
+            if (change < -5) {
+                return '#10B981'; // Green - improving
+            } else if (change > 5) {
+                return '#EF4444'; // Red - worsening
+            } else {
+                return '#F59E0B'; // Orange - stable
+            }
+        }
+
+        function getTrendLabel(color) {
+            switch(color) {
+                case '#10B981': return '↓ Improving';
+                case '#EF4444': return '↑ Worsening';
+                case '#F59E0B': return '→ Stable';
+                default: return '';
+            }
+        }
+
+        // Utility functions
+        function formatDate(dateString) {
+            if (!dateString) return '—';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = message;
+        }
+    </script>
+</body>
+</html>
