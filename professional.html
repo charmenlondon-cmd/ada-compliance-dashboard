@@ -699,6 +699,16 @@
         .metric-row.moderate .metric-value { color: #ffc107; }
         .metric-row.minor .metric-value { color: #17a2b8; }
 
+        /* Center violation count rows */
+        .metric-row.critical,
+        .metric-row.serious,
+        .metric-row.moderate,
+        .metric-row.minor {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
         .comparison-chart-container {
             margin-top: 20px;
             padding: 15px;
