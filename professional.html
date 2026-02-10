@@ -366,6 +366,45 @@
             text-decoration: underline;
         }
 
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-item {
+            padding: 14px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007480;
+            transition: background 0.2s;
+        }
+
+        .recommendation-item:hover {
+            background: #e9ecef;
+        }
+
+        .recommendation-item h4 {
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .recommendation-item p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .recommendation-item a {
+            color: #007480;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
         .chart-container {
             grid-column: 1 / -1;
         }
@@ -733,6 +772,29 @@
     </style>
 </head>
 <body>
+    <!-- Scanning Overlay -->
+    <div id="scanning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 3000; align-items: center; justify-content: center;">
+        <div style="text-align: center; color: white; max-width: 600px; padding: 40px;">
+            <div style="font-size: 2rem; font-weight: 700; margin-bottom: 20px; color: #007480;">
+                Scanning Your Websites...
+            </div>
+            <div style="font-size: 1.2rem; margin-bottom: 30px; color: #ccc;">
+                <span id="scan-progress-text">0/5 sites complete</span>
+            </div>
+            <div style="width: 100%; height: 30px; background: #333; border-radius: 15px; overflow: hidden; margin-bottom: 20px;">
+                <div id="scan-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #007480, #00a8b8); transition: width 0.5s ease;"></div>
+            </div>
+            <div style="font-size: 1rem; color: #999; margin-bottom: 30px;">
+                <span id="scan-time-estimate">Estimated time: ~10 minutes</span>
+            </div>
+            <div style="font-size: 0.95rem; color: #bbb; line-height: 1.8;">
+                <p>✓ You can close this page and come back anytime</p>
+                <p>✓ We'll email you when all scans are complete</p>
+                <p>✓ Your dashboard will be ready to view</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scanned Pages Modal -->
     <div id="scannedPagesModal" class="modal">
         <div class="modal-content">
@@ -870,6 +932,14 @@
                     </div>
                 </div>
 
+                <!-- Recommendations -->
+                <div class="card violations-section">
+                    <h2>Recommendations</h2>
+                    <ul class="recommendations-list" id="recommendations-list">
+                        <li class="loading">Loading recommendations...</li>
+                    </ul>
+                </div>
+
                 <!-- Historical Chart -->
                 <div class="card chart-container">
                     <h2>Compliance Trend</h2>
@@ -888,6 +958,8 @@
         let currentToken = null;
         let allViolations = [];
         let complianceChart = null;
+        let pollingInterval = null;
+        let totalSitesExpected = 0;
 
         // Get token from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -933,12 +1005,23 @@
                 // Populate dropdown
                 populateWebsiteDropdown(urls);
 
-                // Display first site's data
-                displaySiteData(currentSiteUrl);
+                // Check if all scans are complete
+                totalSitesExpected = urls.length;
+                const completedScans = urls.filter(url => allSitesData[url].latest_scan !== null).length;
 
-                // Hide loading, show dashboard
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard-content').style.display = 'block';
+                if (completedScans < totalSitesExpected) {
+                    // Not all scans complete - show scanning overlay and start polling
+                    document.getElementById('loading').style.display = 'none';
+                    showScanningProgress(completedScans, totalSitesExpected);
+                    startPolling();
+                } else {
+                    // All scans complete - display first site's data
+                    displaySiteData(currentSiteUrl);
+
+                    // Hide loading, show dashboard
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('dashboard-content').style.display = 'block';
+                }
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -976,6 +1059,9 @@
             // Update violations
             allViolations = site.violations || [];
             updateViolations(allViolations);
+
+            // Update recommendations
+            updateRecommendations(allViolations);
 
             // Update historical chart
             updateHistoricalChart(site.historical || []);
@@ -1061,6 +1147,57 @@
                     <a href="${v.help_url}" target="_blank">Learn more →</a>
                 </div>
             `).join('');
+        }
+
+        // Update recommendations
+        function updateRecommendations(violations) {
+            const recommendationsList = document.getElementById('recommendations-list');
+
+            if (!violations || violations.length === 0) {
+                recommendationsList.innerHTML = '<li class="no-violations">No recommendations needed - your site is fully compliant</li>';
+                return;
+            }
+
+            // Group violations by rule_id to get unique recommendations
+            const impactOrder = { 'critical': 1, 'serious': 2, 'moderate': 3, 'minor': 4 };
+            const uniqueRecommendations = new Map();
+
+            violations.forEach(v => {
+                if (!uniqueRecommendations.has(v.rule_id)) {
+                    uniqueRecommendations.set(v.rule_id, {
+                        rule_id: v.rule_id,
+                        description: v.description,
+                        impact: v.impact,
+                        help_url: v.help_url,
+                        count: 1
+                    });
+                } else {
+                    uniqueRecommendations.get(v.rule_id).count++;
+                }
+            });
+
+            // Sort by impact priority and show all recommendations
+            const sortedRecommendations = Array.from(uniqueRecommendations.values())
+                .sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact]);
+
+            recommendationsList.innerHTML = sortedRecommendations.map(rec => `
+                <li class="recommendation-item">
+                    <h4>${formatRuleId(rec.rule_id)}
+                        <span style="color: #888; font-weight: normal; font-size: 0.85rem;">(${rec.count} occurrence${rec.count > 1 ? 's' : ''})</span>
+                    </h4>
+                    <p>${rec.description}</p>
+                    ${rec.help_url ? `<a href="${rec.help_url}" target="_blank">View WCAG Guidelines →</a>` : ''}
+                </li>
+            `).join('');
+        }
+
+        // Format rule ID for display
+        function formatRuleId(ruleId) {
+            if (!ruleId) return 'Unknown Rule';
+            return ruleId
+                .split('-')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
         }
 
         // Filter violations
@@ -1333,6 +1470,98 @@
             }
         }
 
+        // Scanning progress functions
+        function showScanningProgress(completed, total) {
+            const overlay = document.getElementById('scanning-overlay');
+            overlay.style.display = 'flex';
+            updateProgressBar(completed, total);
+        }
+
+        function updateProgressBar(completed, total) {
+            const percentage = (completed / total) * 100;
+            const remaining = total - completed;
+
+            // Update progress text
+            document.getElementById('scan-progress-text').textContent = `${completed}/${total} sites complete`;
+
+            // Update progress bar
+            document.getElementById('scan-progress-bar').style.width = percentage + '%';
+
+            // Update time estimate (assume ~2-3 min per site, but all run in parallel)
+            let timeEstimate = '';
+            if (completed === 0) {
+                timeEstimate = 'Estimated time: ~8-10 minutes';
+            } else if (remaining > 0) {
+                const minutesRemaining = Math.max(1, remaining * 2);
+                timeEstimate = `Estimated time: ~${minutesRemaining}-${minutesRemaining + 2} minutes remaining`;
+            } else {
+                timeEstimate = 'Complete! Loading dashboard...';
+            }
+            document.getElementById('scan-time-estimate').textContent = timeEstimate;
+        }
+
+        function startPolling() {
+            // Poll every 10 seconds
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/professional-data?token=${currentToken}`);
+
+                    if (!response.ok) {
+                        console.error('Polling error:', response.status);
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    // Update allSitesData
+                    allSitesData = {};
+                    data.websites.forEach(site => {
+                        allSitesData[site.website_url] = site;
+                    });
+
+                    // Count completed scans
+                    const urls = Object.keys(allSitesData);
+                    const completedScans = urls.filter(url => allSitesData[url].latest_scan !== null).length;
+
+                    // Update progress
+                    updateProgressBar(completedScans, totalSitesExpected);
+
+                    // Check if all complete
+                    if (completedScans >= totalSitesExpected) {
+                        stopPolling();
+                        hideScanningOverlay();
+
+                        // Display customer info
+                        displayCustomerInfo(data.customer);
+
+                        // Populate dropdown
+                        populateWebsiteDropdown(urls);
+
+                        // Display first site's data
+                        currentSiteUrl = urls[0];
+                        displaySiteData(currentSiteUrl);
+
+                        // Show dashboard
+                        document.getElementById('dashboard-content').style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 10000); // Poll every 10 seconds
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        function hideScanningOverlay() {
+            document.getElementById('scanning-overlay').style.display = 'none';
+        }
+
         // Utility functions
         function formatDate(dateString) {
             if (!dateString) return '—';
@@ -1345,6 +1574,11 @@
             document.getElementById('error').style.display = 'block';
             document.getElementById('error').textContent = message;
         }
+
+        // Clean up polling on page unload
+        window.addEventListener('beforeunload', () => {
+            stopPolling();
+        });
     </script>
 </body>
 </html>
