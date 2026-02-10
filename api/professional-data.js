@@ -149,6 +149,8 @@ module.exports = async function handler(req, res) {
           minor_count: parseInt(latestScan[13]) || 0,
           scan_date: latestScan[14],
           scanned_page_urls: parseScannedPageUrls(latestScan[7]), // Column H
+          ai_analysis: latestScan[21], // Column V
+          ai_level: latestScan[22], // Column W
         } : null,
         violations: violations,
         historical: last10.map(s => ({
