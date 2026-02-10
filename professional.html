@@ -405,6 +405,60 @@
             font-weight: 600;
         }
 
+        /* AI Analysis Styles */
+        .ai-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007480;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .ai-issues-section {
+            margin-top: 20px;
+        }
+
+        .ai-issues-section h3 {
+            font-size: 1rem;
+            color: #007480;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .ai-issue-item {
+            background: #fff;
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid #007480;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .ai-issue-item h4 {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .ai-issue-item p {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .no-ai-analysis {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-style: italic;
+        }
+
         .chart-container {
             grid-column: 1 / -1;
         }
@@ -932,6 +986,14 @@
                     </div>
                 </div>
 
+                <!-- AI Analysis -->
+                <div class="card violations-section" id="ai-analysis-card" style="display: none;">
+                    <h2>AI Analysis</h2>
+                    <div id="ai-analysis-content">
+                        <div class="loading">Loading AI analysis...</div>
+                    </div>
+                </div>
+
                 <!-- Recommendations -->
                 <div class="card violations-section">
                     <h2>Recommendations</h2>
@@ -1060,6 +1122,9 @@
             allViolations = site.violations || [];
             updateViolations(allViolations);
 
+            // Update AI Analysis
+            updateAIAnalysis(site.latest_scan);
+
             // Update recommendations
             updateRecommendations(allViolations);
 
@@ -1147,6 +1212,127 @@
                     <a href="${v.help_url}" target="_blank">Learn more →</a>
                 </div>
             `).join('');
+        }
+
+        // Update AI Analysis
+        function updateAIAnalysis(scanSummary) {
+            const aiAnalysisContent = document.getElementById('ai-analysis-content');
+            const aiAnalysisCard = document.getElementById('ai-analysis-card');
+
+            // Check if AI analysis data exists
+            if (!scanSummary || !scanSummary.ai_analysis) {
+                aiAnalysisCard.style.display = 'none';
+                return;
+            }
+
+            aiAnalysisCard.style.display = 'block';
+
+            // Parse AI analysis (it's stored as JSON string)
+            let aiData;
+            try {
+                aiData = typeof scanSummary.ai_analysis === 'string'
+                    ? JSON.parse(scanSummary.ai_analysis)
+                    : scanSummary.ai_analysis;
+            } catch (e) {
+                console.error('Failed to parse AI analysis:', e);
+                aiAnalysisContent.innerHTML = '<div class="no-ai-analysis">Unable to parse AI analysis data</div>';
+                return;
+            }
+
+            // Build the display HTML
+            let html = '';
+
+            // Summary section
+            if (aiData.summary) {
+                html += `<div class="ai-summary">${aiData.summary}</div>`;
+            }
+
+            // Priority fixes section (actual data structure from AI)
+            if (aiData.priority_fixes && aiData.priority_fixes.length > 0) {
+                html += '<div class="ai-issues-section">';
+                html += '<h3>Priority Fixes</h3>';
+                aiData.priority_fixes.forEach(fix => {
+                    const impactColors = {
+                        'critical': '#dc3545',
+                        'serious': '#fd7e14',
+                        'moderate': '#ffc107',
+                        'minor': '#17a2b8'
+                    };
+                    const impactColor = impactColors[fix.impact?.toLowerCase()] || '#007480';
+
+                    html += `
+                        <div class="ai-issue-item" style="border-left-color: ${impactColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h4 style="margin: 0;">${fix.issue || 'Accessibility Issue'}</h4>
+                                <span style="background: ${impactColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${fix.impact || 'issue'}</span>
+                            </div>
+                            ${fix.explanation ? `<p style="margin-bottom: 8px;"><strong>Why this matters:</strong> ${fix.explanation}</p>` : ''}
+                            ${fix.fix ? `<p style="margin-bottom: 0; color: #007480;"><strong>How to fix:</strong> ${fix.fix}</p>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Reading level analysis (if provided)
+            if (aiData.reading_level) {
+                html += `
+                    <div style="margin-top: 20px; padding: 16px; background: #fff8f0; border-radius: 8px; border-left: 4px solid #ffc107;">
+                        <strong style="color: #f57c00; font-size: 0.9rem;">📖 Reading Level Analysis</strong>
+                        <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                            ${aiData.reading_level.current ? `<div><span style="color: #888; font-size: 0.85rem;">Current:</span> <strong style="color: #333;">${aiData.reading_level.current}</strong></div>` : ''}
+                            ${aiData.reading_level.target ? `<div><span style="color: #888; font-size: 0.85rem;">Target:</span> <strong style="color: #28a745;">${aiData.reading_level.target}</strong></div>` : ''}
+                        </div>
+                        ${aiData.reading_level.recommendation ? `<p style="margin: 12px 0 0 0; color: #666; font-size: 0.9rem;"><strong>Recommendation:</strong> ${aiData.reading_level.recommendation}</p>` : ''}
+                    </div>
+                `;
+            }
+
+            // Estimated fix time (if provided)
+            if (aiData.estimated_fix_time) {
+                html += `
+                    <div style="margin-top: 20px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                        <strong style="color: #17a2b8; font-size: 0.9rem;">⏱️ Estimated Fix Time:</strong>
+                        <p style="margin: 8px 0 0 0; color: #666; font-size: 0.9rem;">${aiData.estimated_fix_time}</p>
+                    </div>
+                `;
+            }
+
+            // Support legacy format (visual_issues and content_issues) for backwards compatibility
+            if (aiData.visual_issues && aiData.visual_issues.length > 0) {
+                html += '<div class="ai-issues-section">';
+                html += '<h3>Visual Issues</h3>';
+                aiData.visual_issues.forEach(issue => {
+                    html += `
+                        <div class="ai-issue-item">
+                            <h4>${issue.type || 'Visual Issue'}</h4>
+                            <p>${issue.description || issue.issue || ''}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            if (aiData.content_issues && aiData.content_issues.length > 0) {
+                html += '<div class="ai-issues-section">';
+                html += '<h3>Content Issues</h3>';
+                aiData.content_issues.forEach(issue => {
+                    html += `
+                        <div class="ai-issue-item">
+                            <h4>${issue.type || 'Content Issue'}</h4>
+                            <p>${issue.description || issue.issue || ''}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // If no issues found
+            if (!aiData.summary && (!aiData.priority_fixes || aiData.priority_fixes.length === 0) && (!aiData.visual_issues || aiData.visual_issues.length === 0) && (!aiData.content_issues || aiData.content_issues.length === 0)) {
+                html = '<div class="no-ai-analysis">No additional issues detected by AI analysis</div>';
+            }
+
+            aiAnalysisContent.innerHTML = html;
         }
 
         // Update recommendations
