@@ -1207,9 +1207,9 @@
                 <div class="violation-card ${v.impact}">
                     <h4>${v.rule_id}</h4>
                     <p>${v.description}</p>
+                    <small>Page: ${v.page_url || 'N/A'}</small>
                     <small>Impact: ${v.impact}</small>
                     <small>Element: ${v.element_selector || 'N/A'}</small>
-                    <a href="${v.help_url}" target="_blank">Learn more →</a>
                 </div>
             `).join('');
         }
