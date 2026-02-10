@@ -934,17 +934,6 @@
 
         <div id="dashboard-content" style="display: none;">
             <div class="dashboard-grid">
-                <!-- Website Selector Card - NEW -->
-                <div class="card website-selector-card">
-                    <h2>Selected Website</h2>
-                    <select id="website-dropdown" onchange="switchWebsite(this.value)">
-                        <!-- Populated dynamically -->
-                    </select>
-                    <div class="selected-url-display">
-                        Currently viewing: <span id="current-url"></span>
-                    </div>
-                </div>
-
                 <!-- Combined Score + Date Card - NEW -->
                 <div class="card score-date-card">
                     <div class="split-box">
@@ -965,6 +954,17 @@
                                 <span class="time-value">—</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Website Selector Card - NEW -->
+                <div class="card website-selector-card">
+                    <h2>Selected Website</h2>
+                    <select id="website-dropdown" onchange="switchWebsite(this.value)">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <div class="selected-url-display">
+                        Currently viewing: <span id="current-url"></span>
                     </div>
                 </div>
 
