@@ -130,7 +130,7 @@ module.exports = async function handler(req, res) {
 
       const violationsResponse = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'Violations!A:L',
+        range: 'Violations!A:N',
       });
 
       const violationRows = violationsResponse.data.values || [];
@@ -178,6 +178,7 @@ module.exports = async function handler(req, res) {
         fixed_status: v[9],
         detected_date: v[10],
         fixed_date: v[11],
+        ai_explanation: v[13], // Column N
       }));
     }
 

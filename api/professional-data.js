@@ -75,7 +75,7 @@ module.exports = async function handler(req, res) {
     // Fetch all violations
     const violationsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Violations!A:L',
+      range: 'Violations!A:N',
     });
 
     const violationRows = violationsResponse.data.values || [];
@@ -113,6 +113,7 @@ module.exports = async function handler(req, res) {
               element_selector: v[7],
               help_url: v[8],
               fixed_status: v[9],
+              ai_explanation: v[13], // Column N
             }))
         : [];
 
