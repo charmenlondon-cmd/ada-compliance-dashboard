@@ -802,6 +802,158 @@
             font-style: italic;
         }
 
+        /* AI Analysis Dashboard Styles */
+        .ai-stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .ai-stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .ai-stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .ai-stat-card .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .overall-assessment {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .overall-assessment h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .overall-assessment p {
+            margin: 0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .page-analysis-section {
+            margin-top: 40px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 30px;
+        }
+
+        .page-analysis-section h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 20px;
+        }
+
+        .page-analysis-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .page-analysis-item h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 16px;
+            word-break: break-all;
+        }
+
+        .page-analysis-item .page-summary {
+            margin: 10px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .page-analysis-item .issue-section {
+            margin-top: 15px;
+        }
+
+        .page-analysis-item .issue-section h5 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .page-analysis-item .issue-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .page-analysis-item .issue-section li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .pages-affected {
+            background: #fff9e6;
+            border-left: 3px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .pages-affected strong {
+            color: #f57c00;
+        }
+
+        .pages-affected-list {
+            margin: 5px 0 0 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .impact-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .impact-badge.critical {
+            background: #ff4444;
+            color: white;
+        }
+
+        .impact-badge.serious {
+            background: #ff9800;
+            color: white;
+        }
+
+        .impact-badge.moderate {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .impact-badge.minor {
+            background: #e0e0e0;
+            color: #666;
+        }
+
         /* Scanning Overlay Styles */
         .scanning-overlay {
             position: fixed;
@@ -1855,96 +2007,219 @@
                 return;
             }
 
+            // Detect new format vs legacy format
+            const hasNewFormat = aiData.overall_summary || aiData.page_analyses;
+
             // Build the display HTML
             let html = '';
 
-            // Summary section
-            if (aiData.summary) {
-                html += `<div class="ai-summary">${aiData.summary}</div>`;
-            }
+            if (hasNewFormat) {
+                // ===== NEW FORMAT DISPLAY =====
 
-            // Priority fixes section (actual data structure from AI)
-            if (aiData.priority_fixes && aiData.priority_fixes.length > 0) {
-                html += '<div class="ai-issues-section">';
-                html += '<h3>Priority Fixes</h3>';
-                aiData.priority_fixes.forEach(fix => {
-                    const impactColors = {
-                        'critical': '#dc3545',
-                        'serious': '#fd7e14',
-                        'moderate': '#ffc107',
-                        'minor': '#17a2b8'
-                    };
-                    const impactColor = impactColors[fix.impact?.toLowerCase()] || '#007480';
-
+                // Stats summary cards
+                if (aiData.stats) {
+                    html += '<div class="ai-stats-summary">';
                     html += `
-                        <div class="ai-issue-item" style="border-left-color: ${impactColor};">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                <h4 style="margin: 0;">${fix.issue || 'Accessibility Issue'}</h4>
-                                <span style="background: ${impactColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${fix.impact || 'issue'}</span>
+                        <div class="ai-stat-card">
+                            <h3>Pages Analyzed</h3>
+                            <p class="stat-value">${aiData.stats.pages_analyzed || 0}</p>
+                        </div>
+                        <div class="ai-stat-card">
+                            <h3>Total Issues</h3>
+                            <p class="stat-value">${aiData.stats.total_issues || 0}</p>
+                        </div>
+                        <div class="ai-stat-card">
+                            <h3>Priority Fixes</h3>
+                            <p class="stat-value">${aiData.stats.total_priority_fixes || 0}</p>
+                        </div>
+                    `;
+                    html += '</div>';
+                }
+
+                // Overall assessment
+                if (aiData.overall_summary) {
+                    html += `
+                        <div class="overall-assessment">
+                            <h3>Overall Assessment</h3>
+                            <p>${aiData.overall_summary}</p>
+                        </div>
+                    `;
+                }
+
+                // Aggregated priority fixes
+                if (aiData.aggregated_priority_fixes && aiData.aggregated_priority_fixes.length > 0) {
+                    html += '<div class="ai-issues-section">';
+                    html += '<h3>Top Priority Fixes Across All Pages</h3>';
+
+                    aiData.aggregated_priority_fixes.forEach(fix => {
+                        const impactColors = {
+                            'critical': '#dc3545',
+                            'serious': '#fd7e14',
+                            'moderate': '#ffc107',
+                            'minor': '#17a2b8'
+                        };
+                        const impactColor = impactColors[fix.impact?.toLowerCase()] || '#007480';
+
+                        html += `
+                            <div class="ai-issue-item" style="border-left-color: ${impactColor};">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                    <h4 style="margin: 0; flex: 1;">${fix.rank ? `${fix.rank}. ` : ''}${fix.issue || 'Accessibility Issue'}</h4>
+                                    <span class="impact-badge ${fix.impact?.toLowerCase() || 'minor'}">${fix.impact || 'issue'}</span>
+                                </div>
+                                ${fix.pages_affected && fix.pages_affected.length > 1 ? `
+                                    <div class="pages-affected">
+                                        <strong>⚠️ Found on ${fix.pages_affected.length} pages:</strong>
+                                        <ul class="pages-affected-list">
+                                            ${fix.pages_affected.map(url => `<li>${url}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                                ${fix.explanation ? `<p style="margin-bottom: 8px;"><strong>Why this matters:</strong> ${fix.explanation}</p>` : ''}
+                                ${fix.fix ? `<p style="margin-bottom: 0; color: #007480;"><strong>How to fix:</strong> ${fix.fix}</p>` : ''}
+                                ${fix.estimated_time ? `<p style="margin-top: 8px; color: #666; font-size: 0.9rem;"><strong>Time:</strong> ${fix.estimated_time}</p>` : ''}
                             </div>
-                            ${fix.explanation ? `<p style="margin-bottom: 8px;"><strong>Why this matters:</strong> ${fix.explanation}</p>` : ''}
-                            ${fix.fix ? `<p style="margin-bottom: 0; color: #007480;"><strong>How to fix:</strong> ${fix.fix}</p>` : ''}
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
+                        `;
+                    });
+                    html += '</div>';
+                }
 
-            // Reading level analysis (if provided)
-            if (aiData.reading_level) {
-                html += `
-                    <div style="margin-top: 20px; padding: 16px; background: #fff8f0; border-radius: 8px; border-left: 4px solid #ffc107;">
-                        <strong style="color: #f57c00; font-size: 0.9rem;">📖 Reading Level Analysis</strong>
-                        <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
-                            ${aiData.reading_level.current ? `<div><span style="color: #888; font-size: 0.85rem;">Current:</span> <strong style="color: #333;">${aiData.reading_level.current}</strong></div>` : ''}
-                            ${aiData.reading_level.target ? `<div><span style="color: #888; font-size: 0.85rem;">Target:</span> <strong style="color: #28a745;">${aiData.reading_level.target}</strong></div>` : ''}
-                        </div>
-                        ${aiData.reading_level.recommendation ? `<p style="margin: 12px 0 0 0; color: #666; font-size: 0.9rem;"><strong>Recommendation:</strong> ${aiData.reading_level.recommendation}</p>` : ''}
-                    </div>
-                `;
-            }
+                // Page-by-page analysis
+                if (aiData.page_analyses && aiData.page_analyses.length > 0) {
+                    html += '<div class="page-analysis-section">';
+                    html += '<h3>Page-by-Page Analysis</h3>';
 
-            // Estimated fix time (if provided)
-            if (aiData.estimated_fix_time) {
-                html += `
-                    <div style="margin-top: 20px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #17a2b8;">
-                        <strong style="color: #17a2b8; font-size: 0.9rem;">⏱️ Estimated Fix Time:</strong>
-                        <p style="margin: 8px 0 0 0; color: #666; font-size: 0.9rem;">${aiData.estimated_fix_time}</p>
-                    </div>
-                `;
-            }
+                    aiData.page_analyses.forEach(pageData => {
+                        const analysis = pageData.analysis || {};
 
-            // Support legacy format (visual_issues and content_issues) for backwards compatibility
-            if (aiData.visual_issues && aiData.visual_issues.length > 0) {
-                html += '<div class="ai-issues-section">';
-                html += '<h3>Visual Issues</h3>';
-                aiData.visual_issues.forEach(issue => {
+                        html += `
+                            <div class="page-analysis-item">
+                                <h4>${pageData.page_url}</h4>
+                                ${analysis.summary ? `<div class="page-summary">${analysis.summary}</div>` : ''}
+
+                                ${analysis.visual_issues && analysis.visual_issues.length > 0 ? `
+                                    <div class="issue-section">
+                                        <h5>Visual Issues</h5>
+                                        <ul>
+                                            ${analysis.visual_issues.map(issue => `<li>${issue.issue || issue.description || issue}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+
+                                ${analysis.content_issues && analysis.content_issues.length > 0 ? `
+                                    <div class="issue-section">
+                                        <h5>Content Issues</h5>
+                                        <ul>
+                                            ${analysis.content_issues.map(issue => `<li>${issue.issue || issue.description || issue}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+
+                                ${analysis.priority_fixes && analysis.priority_fixes.length > 0 ? `
+                                    <div class="issue-section">
+                                        <h5>Priority Fixes for This Page</h5>
+                                        <ul>
+                                            ${analysis.priority_fixes.map(fix => `<li><strong>${fix.issue}</strong> - ${fix.fix || ''}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>';
+                }
+
+            } else {
+                // ===== LEGACY FORMAT DISPLAY =====
+
+                // Summary section
+                if (aiData.summary) {
+                    html += `<div class="ai-summary">${aiData.summary}</div>`;
+                }
+
+                // Priority fixes section (actual data structure from AI)
+                if (aiData.priority_fixes && aiData.priority_fixes.length > 0) {
+                    html += '<div class="ai-issues-section">';
+                    html += '<h3>Priority Fixes</h3>';
+                    aiData.priority_fixes.forEach(fix => {
+                        const impactColors = {
+                            'critical': '#dc3545',
+                            'serious': '#fd7e14',
+                            'moderate': '#ffc107',
+                            'minor': '#17a2b8'
+                        };
+                        const impactColor = impactColors[fix.impact?.toLowerCase()] || '#007480';
+
+                        html += `
+                            <div class="ai-issue-item" style="border-left-color: ${impactColor};">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <h4 style="margin: 0;">${fix.issue || 'Accessibility Issue'}</h4>
+                                    <span style="background: ${impactColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${fix.impact || 'issue'}</span>
+                                </div>
+                                ${fix.explanation ? `<p style="margin-bottom: 8px;"><strong>Why this matters:</strong> ${fix.explanation}</p>` : ''}
+                                ${fix.fix ? `<p style="margin-bottom: 0; color: #007480;"><strong>How to fix:</strong> ${fix.fix}</p>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // Reading level analysis (if provided)
+                if (aiData.reading_level) {
                     html += `
-                        <div class="ai-issue-item">
-                            <h4>${issue.type || 'Visual Issue'}</h4>
-                            <p>${issue.description || issue.issue || ''}</p>
+                        <div style="margin-top: 20px; padding: 16px; background: #fff8f0; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <strong style="color: #f57c00; font-size: 0.9rem;">📖 Reading Level Analysis</strong>
+                            <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                                ${aiData.reading_level.current ? `<div><span style="color: #888; font-size: 0.85rem;">Current:</span> <strong style="color: #333;">${aiData.reading_level.current}</strong></div>` : ''}
+                                ${aiData.reading_level.target ? `<div><span style="color: #888; font-size: 0.85rem;">Target:</span> <strong style="color: #28a745;">${aiData.reading_level.target}</strong></div>` : ''}
+                            </div>
+                            ${aiData.reading_level.recommendation ? `<p style="margin: 12px 0 0 0; color: #666; font-size: 0.9rem;"><strong>Recommendation:</strong> ${aiData.reading_level.recommendation}</p>` : ''}
                         </div>
                     `;
-                });
-                html += '</div>';
-            }
+                }
 
-            if (aiData.content_issues && aiData.content_issues.length > 0) {
-                html += '<div class="ai-issues-section">';
-                html += '<h3>Content Issues</h3>';
-                aiData.content_issues.forEach(issue => {
+                // Estimated fix time (if provided)
+                if (aiData.estimated_fix_time) {
                     html += `
-                        <div class="ai-issue-item">
-                            <h4>${issue.type || 'Content Issue'}</h4>
-                            <p>${issue.description || issue.issue || ''}</p>
+                        <div style="margin-top: 20px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                            <strong style="color: #17a2b8; font-size: 0.9rem;">⏱️ Estimated Fix Time:</strong>
+                            <p style="margin: 8px 0 0 0; color: #666; font-size: 0.9rem;">${aiData.estimated_fix_time}</p>
                         </div>
                     `;
-                });
-                html += '</div>';
+                }
+
+                // Support legacy format (visual_issues and content_issues) for backwards compatibility
+                if (aiData.visual_issues && aiData.visual_issues.length > 0) {
+                    html += '<div class="ai-issues-section">';
+                    html += '<h3>Visual Issues</h3>';
+                    aiData.visual_issues.forEach(issue => {
+                        html += `
+                            <div class="ai-issue-item">
+                                <h4>${issue.type || 'Visual Issue'}</h4>
+                                <p>${issue.description || issue.issue || ''}</p>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                if (aiData.content_issues && aiData.content_issues.length > 0) {
+                    html += '<div class="ai-issues-section">';
+                    html += '<h3>Content Issues</h3>';
+                    aiData.content_issues.forEach(issue => {
+                        html += `
+                            <div class="ai-issue-item">
+                                <h4>${issue.type || 'Content Issue'}</h4>
+                                <p>${issue.description || issue.issue || ''}</p>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
             }
 
             // If no issues found
-            if (!aiData.summary && (!aiData.priority_fixes || aiData.priority_fixes.length === 0) && (!aiData.visual_issues || aiData.visual_issues.length === 0) && (!aiData.content_issues || aiData.content_issues.length === 0)) {
+            if (!html || html.trim() === '') {
                 html = '<div class="no-ai-analysis">No additional issues detected by AI analysis</div>';
             }
 
