@@ -11,7 +11,7 @@
     "googleapis": "^126.0.1"
   },
   "devDependencies": {
-    "serve": "^14.2.1"
+    "serve": "^14.2.6"
   },
   "engines": {
     "node": "22.x"
